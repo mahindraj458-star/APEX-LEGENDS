@@ -115,6 +115,16 @@
             background: #111;
             text-align: center;
         }
+
+        .delete-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #555;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.6rem;
+        }
+        .delete-btn:hover { color: var(--accent); border-color: var(--accent); }
     </style>
 </head>
 <body>
@@ -180,7 +190,18 @@
     </div>
 
     <script>
-        let drafts = [];
+        // Load existing drafts from localStorage on startup
+        let drafts = JSON.parse(localStorage.getItem('apex_local_drafts') || '[]');
+
+        // Initialize display
+        window.onload = () => {
+            loadLiveStats();
+            updateDraftList();
+        };
+
+        function saveDraftsToStorage() {
+            localStorage.setItem('apex_local_drafts', JSON.stringify(drafts));
+        }
 
         // Load Real Stats from localStorage
         function loadLiveStats() {
@@ -190,7 +211,6 @@
 
             const activityLog = document.getElementById('recent-activity');
             if (stats.clicks.length > 0) {
-                // Show last 5 interactions
                 const recent = stats.clicks.slice(-5).reverse();
                 let html = '<h2 class="sb-header" style="margin-top:40px;">RECENT_ACTIVITY_LOG</h2>';
                 recent.forEach(act => {
@@ -201,15 +221,13 @@
         }
 
         function terminateSession() {
-            if(confirm("CONFIRM_SESSION_TERMINATION? UNEXPORTED_DRAFTS_WILL_BE_LOST.")) {
-                // In a real app, you'd clear session tokens/cookies here
+            if(confirm("CONFIRM_SESSION_TERMINATION? ALL LOCAL DRAFTS WILL BE PURGED.")) {
+                localStorage.removeItem('apex_local_drafts');
                 location.href = 'blog.html';
             }
         }
 
-        // Auto-refresh stats every 5 seconds
         setInterval(loadLiveStats, 5000);
-        window.onload = loadLiveStats;
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -217,6 +235,7 @@
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
             if (tabId === 'subscribers') loadLiveStats();
+            if (tabId === 'edit') updateDraftList();
         }
 
         function handleUrlPreview(url) {
@@ -253,6 +272,7 @@
             };
 
             drafts.push(post);
+            saveDraftsToStorage();
             updateDraftList();
             
             document.getElementById('post-title').value = '';
@@ -261,7 +281,15 @@
             document.getElementById('post-content').value = '';
             document.getElementById('img-preview').style.display = 'none';
 
-            alert("POST_INITIALIZED_IN_DRAFTS");
+            alert("POST_SAVED_TO_LOCAL_MEMORY");
+        }
+
+        function deleteDraft(id) {
+            if(confirm("DELETE_DRAFT?")) {
+                drafts = drafts.filter(d => d.id !== id);
+                saveDraftsToStorage();
+                updateDraftList();
+            }
         }
 
         function updateDraftList() {
@@ -274,9 +302,15 @@
                 <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:center; gap:15px;">
                         ${d.image ? `<img src="${d.image}" style="width:40px; height:40px; object-fit:cover; border:1px solid #333;" onerror="this.src='https://via.placeholder.com/40?text=ERR'">` : ''}
-                        <span>${d.title}</span>
+                        <div>
+                            <div style="font-size:0.8rem;">${d.title}</div>
+                            <div style="font-size:0.6rem; color:#444;">${d.date}</div>
+                        </div>
                     </div>
-                    <span style="color:var(--accent); font-size:0.7rem;">DRAFT_READY</span>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <span style="color:var(--accent); font-size:0.7rem;">SAVED</span>
+                        <button class="delete-btn" onclick="deleteDraft(${d.id})">PURGE</button>
+                    </div>
                 </div>
             `).join('');
         }
