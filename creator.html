@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX // BLOG CREATOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #ff1111;
+            --sidebar-w: 260px;
+            --panel: #0a0a0a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- SIDEBARS --- */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--panel);
+            border-right: 1px solid #1a1a1a;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-right {
+            border-right: none;
+            border-left: 1px solid #1a1a1a;
+            background: #000;
+        }
+
+        .sb-header { font-family: 'Syncopate'; font-size: 0.7rem; color: #444; margin-bottom: 40px; letter-spacing: 2px; }
+        
+        .nav-item {
+            padding: 15px;
+            color: #666;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+            border-left: 0px solid var(--accent);
+        }
+        .nav-item:hover, .nav-item.active {
+            color: #fff;
+            background: rgba(255,17,17,0.05);
+            border-left-width: 3px;
+        }
+
+        /* --- CONTENT --- */
+        .workspace { flex: 1; padding: 60px; overflow-y: auto; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .editor-container { background: var(--panel); border: 1px solid #1a1a1a; padding: 40px; }
+        input, textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid #222;
+            color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            outline: none;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+
+        /* Image URL Preview Styling */
+        .url-preview-zone {
+            border: 1px solid #222;
+            background: #000;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .preview-img { max-width: 100%; max-height: 200px; margin-top: 10px; display: none; border: 1px solid #222; }
+
+        .btn-action {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Syncopate';
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .stat-card { background: #111; padding: 20px; margin-bottom: 10px; border: 1px solid #1a1a1a; }
+
+        #download-bar {
+            margin-top: auto;
+            padding: 20px;
+            background: #111;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="sb-header">CORE_CONTROLS</div>
+        <div class="nav-item active" onclick="switchTab('subscribers')">VIEWERS_SUBS</div>
+        <div class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
+        <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
+    </div>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace">
+        <!-- Subscribers Tab -->
+        <div id="subscribers" class="tab-content active">
+            <h2 class="sb-header">NETWORK_STATISTICS</h2>
+            <div class="stat-card">ACTIVE_READERS: 1,204</div>
+            <div class="stat-card">GLOBAL_SUBS: 452</div>
+            <div class="stat-card">REGION: ASIA_PACIFIC</div>
+        </div>
+
+        <!-- Create Tab -->
+        <div id="create" class="tab-content">
+            <h2 class="sb-header">INITIALIZE_POST</h2>
+            <div class="editor-container">
+                <input type="text" id="post-title" placeholder="POST_TITLE">
+                
+                <!-- Image URL Input -->
+                <div class="url-preview-zone">
+                    <input type="text" id="post-image-url" placeholder="IMAGE_URL (e.g. from Postimages.org)" oninput="handleUrlPreview(this.value)">
+                    <img id="img-preview" class="preview-img" alt="URL_PREVIEW">
+                </div>
+
+                <textarea id="post-excerpt" rows="3" placeholder="SHORT_EXCERPT"></textarea>
+                <textarea id="post-content" rows="10" placeholder="FULL_CONTENT_MARKDOWN"></textarea>
+                <button class="btn-action" onclick="saveBlog()">PUSH_TO_DRAFT</button>
+            </div>
+        </div>
+
+        <!-- Edit Tab -->
+        <div id="edit" class="tab-content">
+            <h2 class="sb-header">LOCAL_DRAFTS</h2>
+            <div id="draft-list">
+                <p style="color:#333;">NO_DRAFTS_IN_MEMORY</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR (DOWNLOAD JS) -->
+    <div class="sidebar sidebar-right">
+        <div class="sb-header">DATA_EXPORT</div>
+        <p style="font-size:0.6rem; color:#444; line-height:1.5;">GENERATE 'blog_data.js' TO UPDATE LIVE VIEWERS PAGE.</p>
+        <div id="download-bar">
+            <button class="btn-action" style="width:100%;" onclick="downloadData()">DOWNLOAD.JS</button>
+        </div>
+    </div>
+
+    <script>
+        let drafts = [];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function handleUrlPreview(url) {
+            const preview = document.getElementById('img-preview');
+            if (url && url.trim() !== '') {
+                preview.src = url;
+                preview.style.display = 'block';
+                preview.onerror = () => {
+                    preview.style.display = 'none';
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function saveBlog() {
+            const title = document.getElementById('post-title').value;
+            const imageUrl = document.getElementById('post-image-url').value;
+            const excerpt = document.getElementById('post-excerpt').value;
+            const content = document.getElementById('post-content').value;
+            
+            if(!title) {
+                alert("ERR: TITLE_REQUIRED");
+                return;
+            }
+
+            const post = {
+                id: Date.now(),
+                title,
+                excerpt,
+                content,
+                image: imageUrl, // Now stores the link
+                date: new Date().toLocaleDateString()
+            };
+
+            drafts.push(post);
+            updateDraftList();
+            
+            // Clear inputs for next entry
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-image-url').value = '';
+            document.getElementById('post-excerpt').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('img-preview').style.display = 'none';
+
+            alert("POST_INITIALIZED_IN_DRAFTS");
+        }
+
+        function updateDraftList() {
+            const list = document.getElementById('draft-list');
+            if (drafts.length === 0) {
+                list.innerHTML = '<p style="color:#333;">NO_DRAFTS_IN_MEMORY</p>';
+                return;
+            }
+            list.innerHTML = drafts.map(d => `
+                <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        ${d.image ? `<img src="${d.image}" style="width:40px; height:40px; object-fit:cover; border:1px solid #333;" onerror="this.src='https://via.placeholder.com/40?text=ERR'">` : ''}
+                        <span>${d.title}</span>
+                    </div>
+                    <span style="color:var(--accent); font-size:0.7rem;">DRAFT_READY</span>
+                </div>
+            `).join('');
+        }
+
+        function downloadData() {
+            if(drafts.length === 0) {
+                alert("NO_DATA_TO_EXPORT");
+                return;
+            }
+            const dataStr = "window.blogPosts = " + JSON.stringify(drafts, null, 2) + ";";
+            const blob = new Blob([dataStr], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "blog_data.js";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>
