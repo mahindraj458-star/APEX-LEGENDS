@@ -90,6 +90,7 @@
         }
 
         .stat-card { background: #111; padding: 20px; margin-bottom: 10px; border: 1px solid #1a1a1a; }
+        .stat-card b { color: var(--accent); }
 
         #download-bar {
             margin-top: auto;
@@ -104,7 +105,7 @@
     <!-- LEFT SIDEBAR -->
     <div class="sidebar">
         <div class="sb-header">CORE_CONTROLS</div>
-        <div class="nav-item active" onclick="switchTab('subscribers')">VIEWERS_SUBS</div>
+        <div class="nav-item active" onclick="switchTab('subscribers')">LIVE_NETWORK_INTEL</div>
         <div class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
         <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
     </div>
@@ -113,10 +114,13 @@
     <main class="workspace">
         <!-- Subscribers Tab -->
         <div id="subscribers" class="tab-content active">
-            <h2 class="sb-header">NETWORK_STATISTICS</h2>
-            <div class="stat-card">ACTIVE_READERS: 1,204</div>
-            <div class="stat-card">GLOBAL_SUBS: 452</div>
-            <div class="stat-card">REGION: ASIA_PACIFIC</div>
+            <h2 class="sb-header">REAL_TIME_STATISTICS</h2>
+            <div class="stat-card">UNIQUE_TRAFFIC_HITS: <b id="stat-views">0</b></div>
+            <div class="stat-card">TOTAL_ENGAGEMENTS: <b id="stat-clicks">0</b></div>
+            <div id="recent-activity">
+                <h2 class="sb-header" style="margin-top:40px;">RECENT_ACTIVITY_LOG</h2>
+                <div class="stat-card" style="font-size: 0.7rem; color: #444;">WAITING_FOR_NETWORK_DATA...</div>
+            </div>
         </div>
 
         <!-- Create Tab -->
@@ -158,11 +162,34 @@
     <script>
         let drafts = [];
 
+        // Load Real Stats from localStorage
+        function loadLiveStats() {
+            const stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
+            document.getElementById('stat-views').innerText = stats.views;
+            document.getElementById('stat-clicks').innerText = stats.clicks.length;
+
+            const activityLog = document.getElementById('recent-activity');
+            if (stats.clicks.length > 0) {
+                // Show last 5 interactions
+                const recent = stats.clicks.slice(-5).reverse();
+                let html = '<h2 class="sb-header" style="margin-top:40px;">RECENT_ACTIVITY_LOG</h2>';
+                recent.forEach(act => {
+                    html += `<div class="stat-card">USER_OPENED: <b>${act.title}</b> <br><small style="color:#333">${new Date(act.time).toLocaleTimeString()}</small></div>`;
+                });
+                activityLog.innerHTML = html;
+            }
+        }
+
+        // Auto-refresh stats every 5 seconds
+        setInterval(loadLiveStats, 5000);
+        window.onload = loadLiveStats;
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             event.currentTarget.classList.add('active');
+            if (tabId === 'subscribers') loadLiveStats();
         }
 
         function handleUrlPreview(url) {
@@ -194,14 +221,13 @@
                 title,
                 excerpt,
                 content,
-                image: imageUrl, // Now stores the link
+                image: imageUrl,
                 date: new Date().toLocaleDateString()
             };
 
             drafts.push(post);
             updateDraftList();
             
-            // Clear inputs for next entry
             document.getElementById('post-title').value = '';
             document.getElementById('post-image-url').value = '';
             document.getElementById('post-excerpt').value = '';
