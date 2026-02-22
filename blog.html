@@ -116,7 +116,7 @@
         .blog-header h1 { font-family: 'Syncopate'; font-size: 3rem; margin-bottom: 50px; }
         
         .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; }
-        .post-card { background: #0a0a0a; border: 1px solid #151515; overflow: hidden; transition: 0.4s; }
+        .post-card { background: #0a0a0a; border: 1px solid #151515; overflow: hidden; transition: 0.4s; cursor: pointer; }
         .post-card:hover { border-color: var(--accent); transform: translateY(-10px); }
         
         .post-img-wrapper {
@@ -174,12 +174,22 @@
             document.getElementById('gatekeeper').style.display = 'block';
         }, 2000);
 
+        function trackInteraction(type, detail) {
+            let stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
+            if (type === 'view') stats.views++;
+            if (type === 'click') {
+                stats.clicks.push({ title: detail, time: new Date().toISOString() });
+            }
+            localStorage.setItem('apex_blog_stats', JSON.stringify(stats));
+        }
+
         function showBlogs() {
             document.getElementById('book-intro').style.opacity = '0';
             document.getElementById('gatekeeper').style.display = 'none';
             document.getElementById('main-blog').style.opacity = '1';
             setTimeout(() => document.getElementById('book-intro').remove(), 1000);
             loadPosts();
+            trackInteraction('view');
         }
 
         function loadPosts() {
@@ -188,7 +198,7 @@
                 grid.innerHTML = '';
                 window.blogPosts.forEach(post => {
                     grid.innerHTML += `
-                        <div class="post-card">
+                        <div class="post-card" onclick="trackInteraction('click', '${post.title}'); alert('Opening Full Content: ${post.title}')">
                             <div class="post-img-wrapper">
                                 ${post.image ? `<img src="${post.image}" alt="${post.title}">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#222; font-size:0.6rem;">NO_IMAGE_DATA</div>`}
                             </div>
