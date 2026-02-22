@@ -1,0 +1,178 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX // CREATOR_AUTH</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --accent: #ff1111;
+            --text: #eee;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .auth-terminal {
+            width: 400px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            padding: 40px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .auth-terminal::before {
+            content: 'TERMINAL_AUTH_V2.0';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--bg);
+            padding: 0 10px;
+            font-size: 0.6rem;
+            color: #444;
+        }
+
+        h2 {
+            font-family: 'Syncopate';
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            color: var(--accent);
+        }
+
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.6rem; color: #444; margin-bottom: 8px; text-transform: uppercase; }
+        
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            padding: 12px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .btn-auth {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: #fff;
+            padding: 15px;
+            font-family: 'Syncopate';
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-auth:hover {
+            background: var(--accent);
+            box-shadow: 0 0 20px rgba(255,17,17,0.3);
+        }
+
+        .toggle-mode {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #444;
+            text-align: center;
+            cursor: pointer;
+        }
+        .toggle-mode span { color: var(--accent); }
+    </style>
+</head>
+<body>
+
+    <div class="auth-terminal">
+        <h2 id="auth-title">AUTHORIZE_ACCESS</h2>
+        
+        <div class="input-group">
+            <label>Identification</label>
+            <input type="text" id="username" placeholder="USERNAME">
+        </div>
+
+        <div class="input-group" id="email-group" style="display:none;">
+            <label>Comms_Link</label>
+            <input type="email" id="email" placeholder="EMAIL_ADDRESS">
+        </div>
+
+        <div class="input-group">
+            <label>Security_Key</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+
+        <button class="btn-auth" onclick="handleAuth()" id="auth-btn">LOGIN</button>
+        
+        <p class="toggle-mode" onclick="toggleMode()" id="mode-text">
+            NO_ACCOUNT? <span>REGISTER_NEW_CREATOR</span>
+        </p>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function toggleMode() {
+            isLogin = !isLogin;
+            document.getElementById('auth-title').innerText = isLogin ? 'AUTHORIZE_ACCESS' : 'REGISTER_CREATOR';
+            document.getElementById('auth-btn').innerText = isLogin ? 'LOGIN' : 'REGISTER';
+            document.getElementById('email-group').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('mode-text').innerHTML = isLogin ? 
+                'NO_ACCOUNT? <span>REGISTER_NEW_CREATOR</span>' : 
+                'ALREADY_VALIDATED? <span>RETURN_TO_LOGIN</span>';
+        }
+
+        function handleAuth() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(!user || !pass) {
+                alert("ERR: FIELDS_EMPTY");
+                return;
+            }
+
+            // Mocking the authentication / Registration process
+            // In a real scenario, this would post to a DB. 
+            // We'll simulate a broadcast to the Admin via localStorage for now.
+            
+            const authData = {
+                user: user,
+                timestamp: new Date().toISOString(),
+                action: isLogin ? 'LOGIN' : 'REGISTRATION'
+            };
+
+            // This is the "broadcast" that admin.html will eventually pick up
+            localStorage.setItem('latest_creator_event', JSON.stringify(authData));
+
+            // Grant Access
+            document.body.innerHTML = `
+                <div style="text-align:center;">
+                    <h2 style="font-family:'Syncopate'; color:var(--accent);">ACCESS_GRANTED</h2>
+                    <p style="margin-top:20px; color:#444;">REDIRECTING_TO_WORKSPACE...</p>
+                </div>
+            `;
+
+            setTimeout(() => {
+                location.href = 'creator.html';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
