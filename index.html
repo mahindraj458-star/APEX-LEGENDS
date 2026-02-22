@@ -47,7 +47,61 @@
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: #222; }
 
-        /* --- 0. CENTRAL LOGO --- */
+        /* --- 0. INTRO ANIMATION --- */
+        #intro-sequence {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        #speed-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .intro-title {
+            font-size: 5vw;
+            letter-spacing: 2vw;
+            color: #fff;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            font-family: 'Syncopate', sans-serif;
+            padding-left: 2vw;
+        }
+
+        .loading-line {
+            width: 250px;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .loading-line::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            height: 100%;
+            width: 0%;
+            background: #fff;
+            animation: fillLine 2.2s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fillLine { to { width: 100%; } }
+
+        /* --- 1. CENTRAL LOGO --- */
         .brand-logo-fixed {
             position: fixed;
             top: 30px;
@@ -67,9 +121,7 @@
             text-shadow: 0 0 20px rgba(0,0,0,1);
         }
 
-        /* Removed ARCHIVE_CORE span */
-
-        /* --- 1. HERO BILLBOARD --- */
+        /* --- 2. HERO BILLBOARD --- */
         #hero-billboard {
             width: 100vw;
             height: 90vh;
@@ -95,9 +147,7 @@
 
         .hero-slide.active { opacity: 0.6; transform: scale(1.1); }
 
-        /* Removed CURATED PERFORMANCE overlay */
-
-        /* --- 2. SITE DESCRIPTION --- */
+        /* --- 3. SITE DESCRIPTION --- */
         .site-desc-section {
             padding: 100px 10vw;
             text-align: center;
@@ -119,12 +169,19 @@
             font-weight: 300;
         }
 
-        /* --- 3. STAGGERED ARCHIVE --- */
+        /* --- 4. STAGGERED ARCHIVE & MOTION BLUR FOCUS --- */
         #archive-list {
             padding: 100px 5vw;
             display: flex;
             flex-direction: column;
             gap: 150px;
+        }
+
+        /* Logic: when the list is hovered, blur all children, then un-blur the specific one being hovered */
+        #archive-list:hover .archive-item {
+            filter: blur(8px) grayscale(100%);
+            opacity: 0.3;
+            transform: scale(0.98);
         }
 
         .archive-item {
@@ -134,12 +191,19 @@
             width: 100%;
             opacity: 0;
             transform: translateY(50px);
-            transition: 1s cubic-bezier(0.2, 1, 0.3, 1);
+            transition: 0.6s cubic-bezier(0.2, 1, 0.3, 1), filter 0.6s ease, opacity 0.6s ease;
         }
 
         .archive-item.visible { opacity: 1; transform: translateY(0); }
 
-        /* Alternating Alignment */
+        /* Override blur for the focused item */
+        #archive-list .archive-item:hover {
+            filter: blur(0) grayscale(0%);
+            opacity: 1;
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
         .archive-item:nth-child(even) { flex-direction: row-reverse; }
 
         .archive-img-box {
@@ -157,7 +221,9 @@
             transition: 0.6s ease;
         }
 
-        .archive-img-box:hover img { filter: grayscale(0%) brightness(1); transform: scale(1.05); }
+        .archive-item:hover .archive-img-box img { 
+            filter: grayscale(0%) brightness(1); 
+        }
 
         .archive-info { flex: 1; }
         .archive-info .year { color: var(--alert); letter-spacing: 4px; font-size: 0.9rem; }
@@ -172,12 +238,46 @@
         }
         .view-btn:hover { border-color: #fff; background: #fff; color: #000; }
 
-        /* --- SLIM SIDEBAR & MODAL --- */
+        /* --- SLIM SIDEBAR & RED LINE HOVER --- */
         #menu-toggle { position: fixed; top: 35px; left: 35px; z-index: 1001; cursor: pointer; width: 25px; height: 15px; display: flex; flex-direction: column; justify-content: space-between; }
         #menu-toggle span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.3s; }
+        
         #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: rgba(5,5,5,0.98); backdrop-filter: blur(20px); z-index: 1000; transition: 0.5s; padding: 100px 40px; }
         #sidebar.active { left: 0; }
-        #sidebar a { color: #888; text-decoration: none; display: block; margin-bottom: 20px; font-size: 1.2rem; letter-spacing: 2px; }
+        
+        #sidebar a { 
+            color: #888; 
+            text-decoration: none; 
+            display: block; 
+            margin-bottom: 30px; 
+            font-size: 1.2rem; 
+            letter-spacing: 2px;
+            position: relative;
+            padding-left: 0;
+            transition: 0.3s ease;
+        }
+
+        /* Red Line Indicator */
+        #sidebar a::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 1px;
+            background: var(--alert);
+            transition: 0.4s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+
+        #sidebar a:hover {
+            color: #fff;
+            padding-left: 15px;
+        }
+
+        #sidebar a:hover::before {
+            width: 25px;
+        }
         
         #deep-dive { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; display: flex; opacity: 0; pointer-events: none; transition: 0.6s; }
         #deep-dive.active { opacity: 1; pointer-events: auto; }
@@ -196,10 +296,18 @@
             .archive-img-box { width: 100%; height: 35vh; }
             #deep-dive { flex-direction: column; }
             .dd-content, .dd-image-container { width: 100%; height: auto; }
+            #archive-list:hover .archive-item { filter: none; opacity: 1; transform: none; } /* Disable blur on mobile for usability */
         }
     </style>
 </head>
 <body>
+
+    <!-- 0. INTRO SEQUENCE -->
+    <div id="intro-sequence">
+        <canvas id="speed-canvas"></canvas>
+        <h1 class="intro-title">APEX</h1>
+        <div class="loading-line"></div>
+    </div>
 
     <div class="brand-logo-fixed">
         <h1>APEX</h1>
@@ -249,6 +357,46 @@
     </div>
 
     <script>
+        /* INTRO ANIMATION SCRIPT */
+        const canvas = document.getElementById('speed-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+        const resize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+        window.addEventListener('resize', resize); resize();
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = width/2 + (Math.random()-0.5)*50;
+                this.y = height/2 + (Math.random()-0.5)*50;
+                this.z = Math.random()*1000;
+                this.s = Math.random()*20+5;
+            }
+            draw() {
+                this.z -= this.s;
+                if(this.z <= 0) this.reset();
+                const f = 400/this.z, px = (this.x-width/2)*f+width/2, py = (this.y-height/2)*f+height/2;
+                ctx.fillStyle = `rgba(255,255,255,${f/2})`;
+                ctx.fillRect(px, py, f, f);
+            }
+        }
+        for(let i=0; i<150; i++) particles.push(new Particle());
+        const anim = () => { 
+            ctx.fillStyle='black'; 
+            ctx.fillRect(0,0,width,height); 
+            particles.forEach(p=>p.draw()); 
+            if(document.getElementById('intro-sequence')) requestAnimationFrame(anim); 
+        };
+        anim();
+        setTimeout(() => { 
+            const intro = document.getElementById('intro-sequence');
+            if(intro) {
+                intro.style.opacity='0'; 
+                setTimeout(()=>intro.remove(), 1200); 
+            }
+        }, 2500);
+
+        /* CORE UI SCRIPTS */
         const toggleMenu = () => document.getElementById('sidebar').classList.toggle('active');
         const closeDeepDive = () => document.getElementById('deep-dive').classList.remove('active');
 
