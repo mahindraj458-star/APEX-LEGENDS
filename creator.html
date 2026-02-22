@@ -50,6 +50,23 @@
             border-left-width: 3px;
         }
 
+        .nav-terminate {
+            margin-top: auto;
+            color: #444;
+            border: 1px solid #222;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Syncopate';
+        }
+        .nav-terminate:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: rgba(255,17,17,0.1);
+        }
+
         /* --- CONTENT --- */
         .workspace { flex: 1; padding: 60px; overflow-y: auto; }
         
@@ -108,6 +125,9 @@
         <div class="nav-item active" onclick="switchTab('subscribers')">LIVE_NETWORK_INTEL</div>
         <div class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
         <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
+        
+        <!-- Terminate Session Button -->
+        <div class="nav-terminate" onclick="terminateSession()">TERMINATE_SESSION</div>
     </div>
 
     <!-- MAIN WORKSPACE -->
@@ -177,6 +197,13 @@
                     html += `<div class="stat-card">USER_OPENED: <b>${act.title}</b> <br><small style="color:#333">${new Date(act.time).toLocaleTimeString()}</small></div>`;
                 });
                 activityLog.innerHTML = html;
+            }
+        }
+
+        function terminateSession() {
+            if(confirm("CONFIRM_SESSION_TERMINATION? UNEXPORTED_DRAFTS_WILL_BE_LOST.")) {
+                // In a real app, you'd clear session tokens/cookies here
+                location.href = 'blog.html';
             }
         }
 
