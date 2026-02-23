@@ -496,7 +496,7 @@
     <script>
         // CORE STATE - Sourced from Persistent Storage and External Files
         let activeCreators = JSON.parse(localStorage.getItem('apex_authorized_creators')) || [];
-        let blogDataFeed = window.blogData || JSON.parse(localStorage.getItem('apex_blog_cache')) || []; // Try external JS first, then local storage
+        let blogDataFeed = window.blogData || []; // STRICTLY from blog_data.js now (No local cache fallbacks)
         let showroomBuffer = [];
 
         function switchTab(tabId) {
