@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -97,6 +96,15 @@
             cursor: pointer;
         }
         .toggle-mode span { color: var(--accent); }
+        
+        #error-display {
+            color: var(--accent);
+            font-size: 0.6rem;
+            margin-bottom: 15px;
+            text-align: center;
+            min-height: 1em;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -104,19 +112,21 @@
     <div class="auth-terminal">
         <h2 id="auth-title">AUTHORIZE_ACCESS</h2>
         
+        <div id="error-display"></div>
+
         <div class="input-group">
             <label>Identification</label>
-            <input type="text" id="username" placeholder="USERNAME">
+            <input type="text" id="username" placeholder="USERNAME" autocomplete="username">
         </div>
 
         <div class="input-group" id="email-group" style="display:none;">
             <label>Comms_Link</label>
-            <input type="email" id="email" placeholder="EMAIL_ADDRESS">
+            <input type="email" id="email" placeholder="EMAIL_ADDRESS" autocomplete="email">
         </div>
 
         <div class="input-group">
             <label>Security_Key</label>
-            <input type="password" id="password" placeholder="••••••••">
+            <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
         </div>
 
         <button class="btn-auth" onclick="handleAuth()" id="auth-btn">LOGIN</button>
@@ -131,6 +141,9 @@
 
         function toggleMode() {
             isLogin = !isLogin;
+            const errorDiv = document.getElementById('error-display');
+            errorDiv.style.display = 'none';
+            
             document.getElementById('auth-title').innerText = isLogin ? 'AUTHORIZE_ACCESS' : 'REGISTER_CREATOR';
             document.getElementById('auth-btn').innerText = isLogin ? 'LOGIN' : 'REGISTER';
             document.getElementById('email-group').style.display = isLogin ? 'none' : 'block';
@@ -139,33 +152,63 @@
                 'ALREADY_VALIDATED? <span>RETURN_TO_LOGIN</span>';
         }
 
+        function showError(msg) {
+            const errorDiv = document.getElementById('error-display');
+            errorDiv.innerText = msg;
+            errorDiv.style.display = 'block';
+        }
+
         function handleAuth() {
-            const user = document.getElementById('username').value;
+            const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value;
+            const email = document.getElementById('email').value.trim();
 
             if(!user || !pass) {
-                alert("ERR: FIELDS_EMPTY");
+                showError("ERR: FIELDS_REQUIRED");
                 return;
             }
 
-            // Mocking the authentication / Registration process
-            // In a real scenario, this would post to a DB. 
-            // We'll simulate a broadcast to the Admin via localStorage for now.
-            
+            // Get existing credentials from local storage
+            const accounts = JSON.parse(localStorage.getItem('apex_local_accounts') || '{}');
+
+            if (isLogin) {
+                // LOGIN LOGIC
+                if (!accounts[user]) {
+                    showError("ERR: USER_NOT_FOUND");
+                    return;
+                }
+                if (accounts[user].pass !== pass) {
+                    showError("ERR: INVALID_KEY");
+                    return;
+                }
+            } else {
+                // REGISTER LOGIC
+                if (accounts[user]) {
+                    showError("ERR: ALIAS_TAKEN");
+                    return;
+                }
+                // Create new account
+                accounts[user] = {
+                    pass: pass,
+                    email: email,
+                    joined: new Date().toISOString()
+                };
+                localStorage.setItem('apex_local_accounts', JSON.stringify(accounts));
+            }
+
+            // Broadcast to Admin Workspace via event log
             const authData = {
                 user: user,
                 timestamp: new Date().toISOString(),
                 action: isLogin ? 'LOGIN' : 'REGISTRATION'
             };
-
-            // This is the "broadcast" that admin.html will eventually pick up
             localStorage.setItem('latest_creator_event', JSON.stringify(authData));
 
-            // Grant Access
-            document.body.innerHTML = `
-                <div style="text-align:center;">
-                    <h2 style="font-family:'Syncopate'; color:var(--accent);">ACCESS_GRANTED</h2>
-                    <p style="margin-top:20px; color:#444;">REDIRECTING_TO_WORKSPACE...</p>
+            // Success Transition
+            document.querySelector('.auth-terminal').innerHTML = `
+                <div style="text-align:center; padding: 20px 0;">
+                    <h2 style="font-family:'Syncopate'; color:var(--accent); margin-bottom: 10px;">${isLogin ? 'SESSION_ACTIVE' : 'ID_PROVISIONED'}</h2>
+                    <p style="font-size: 0.7rem; color:#444;">SYNCING_TO_OVERSEER...</p>
                 </div>
             `;
 
