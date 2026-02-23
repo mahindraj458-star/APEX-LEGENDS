@@ -155,6 +155,27 @@
 
         .export-btn span { opacity: 0.5; font-size: 0.6rem; }
 
+        .terminate-btn {
+            width: 100%;
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            border-top: 1px solid rgba(255, 17, 17, 0.2);
+            color: var(--alert-red);
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .terminate-btn:hover {
+            background: rgba(255, 17, 17, 0.1);
+            color: #fff;
+        }
+
         /* --- MAIN WORKSPACE --- */
         #workspace {
             flex: 1;
@@ -333,6 +354,8 @@
                 </button>
             </div>
         </div>
+
+        <button class="terminate-btn" onclick="terminateSession()">[!] TERMINATE_SESSION</button>
     </nav>
 
     <!-- MAIN WORKSPACE -->
@@ -473,7 +496,7 @@
     <script>
         // CORE STATE - Sourced from Persistent Storage and External Files
         let activeCreators = JSON.parse(localStorage.getItem('apex_authorized_creators')) || [];
-        let blogDataFeed = window.blogData || []; // Loaded from blog_data.js
+        let blogDataFeed = window.blogData || JSON.parse(localStorage.getItem('apex_blog_cache')) || []; // Try external JS first, then local storage
         let showroomBuffer = [];
 
         function switchTab(tabId) {
@@ -489,12 +512,23 @@
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
 
+        function terminateSession() {
+            if(confirm("Are you sure you want to terminate the current overseer session?")) {
+                document.body.style.opacity = '0';
+                document.body.style.transition = '0.5s';
+                setTimeout(() => {
+                    window.location.href = "index.html";
+                }, 500);
+            }
+        }
+
         // --- BLOGGER SYNC LOGIC (Sourced from login_creator.html events) ---
         function checkIncomingRegistrations() {
             const latestEventRaw = localStorage.getItem('latest_creator_event');
             if (latestEventRaw) {
                 const event = JSON.parse(latestEventRaw);
-                if (event.action === 'REGISTRATION') {
+                // Catch both REGISTRATION and LOGIN so test logins appear in the system
+                if (event.action === 'REGISTRATION' || event.action === 'LOGIN') {
                     // Check if they already exist
                     const exists = activeCreators.find(c => c.name === event.user);
                     if (!exists) {
