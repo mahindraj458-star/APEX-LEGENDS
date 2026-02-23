@@ -60,6 +60,7 @@
             cursor: pointer;
             transition: 0.3s;
             font-family: 'Syncopate';
+            margin-bottom: 10px;
         }
         .nav-terminate:hover {
             color: var(--accent);
@@ -116,15 +117,21 @@
             text-align: center;
         }
 
-        .delete-btn {
+        .action-btn {
             background: transparent;
             border: 1px solid #333;
             color: #555;
-            padding: 5px 10px;
+            padding: 5px 12px;
             cursor: pointer;
             font-size: 0.6rem;
+            font-family: 'Syncopate';
+            transition: 0.2s;
         }
-        .delete-btn:hover { color: var(--accent); border-color: var(--accent); }
+        .action-btn:hover { color: #fff; border-color: #666; }
+        .action-btn.delete:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Hidden File Input */
+        #file-import { display: none; }
     </style>
 </head>
 <body>
@@ -136,6 +143,11 @@
         <div class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
         <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
         
+        <div style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;">
+            <label for="file-import" class="nav-terminate" style="display: block; cursor: pointer; color: #888; border-color: #333;">IMPORT_EXISTING_DATA</label>
+            <input type="file" id="file-import" accept=".js" onchange="importData(event)">
+        </div>
+
         <!-- Terminate Session Button -->
         <div class="nav-terminate" onclick="terminateSession()">TERMINATE_SESSION</div>
     </div>
@@ -153,13 +165,13 @@
             </div>
         </div>
 
-        <!-- Create Tab -->
+        <!-- Create/Edit Tab -->
         <div id="create" class="tab-content">
-            <h2 class="sb-header">INITIALIZE_POST</h2>
+            <h2 class="sb-header" id="editor-mode-label">INITIALIZE_POST</h2>
             <div class="editor-container">
+                <input type="hidden" id="post-id">
                 <input type="text" id="post-title" placeholder="POST_TITLE">
                 
-                <!-- Image URL Input -->
                 <div class="url-preview-zone">
                     <input type="text" id="post-image-url" placeholder="IMAGE_URL (e.g. from Postimages.org)" oninput="handleUrlPreview(this.value)">
                     <img id="img-preview" class="preview-img" alt="URL_PREVIEW">
@@ -167,13 +179,17 @@
 
                 <textarea id="post-excerpt" rows="3" placeholder="SHORT_EXCERPT"></textarea>
                 <textarea id="post-content" rows="10" placeholder="FULL_CONTENT_MARKDOWN"></textarea>
-                <button class="btn-action" onclick="saveBlog()">PUSH_TO_DRAFT</button>
+                
+                <div style="display:flex; gap:15px;">
+                    <button id="main-save-btn" class="btn-action" onclick="saveBlog()">PUSH_TO_DRAFT</button>
+                    <button id="cancel-edit-btn" class="btn-action" style="background:#222; display:none;" onclick="cancelEdit()">CANCEL_EDIT</button>
+                </div>
             </div>
         </div>
 
-        <!-- Edit Tab -->
+        <!-- Edit/List Tab -->
         <div id="edit" class="tab-content">
-            <h2 class="sb-header">LOCAL_DRAFTS</h2>
+            <h2 class="sb-header">LOCAL_DRAFTS_ARCHIVE</h2>
             <div id="draft-list">
                 <p style="color:#333;">NO_DRAFTS_IN_MEMORY</p>
             </div>
@@ -190,10 +206,9 @@
     </div>
 
     <script>
-        // Load existing drafts from localStorage on startup
         let drafts = JSON.parse(localStorage.getItem('apex_local_drafts') || '[]');
+        let isEditing = false;
 
-        // Initialize display
         window.onload = () => {
             loadLiveStats();
             updateDraftList();
@@ -203,7 +218,6 @@
             localStorage.setItem('apex_local_drafts', JSON.stringify(drafts));
         }
 
-        // Load Real Stats from localStorage
         function loadLiveStats() {
             const stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
             document.getElementById('stat-views').innerText = stats.views;
@@ -225,6 +239,39 @@
                 localStorage.removeItem('apex_local_drafts');
                 location.href = 'blog.html';
             }
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                try {
+                    // Extract the JSON from the "window.blogPosts = [...]" string
+                    const jsonStr = content.substring(content.indexOf('=') + 1, content.lastIndexOf(';')).trim();
+                    const importedDrafts = JSON.parse(jsonStr);
+                    
+                    if (Array.isArray(importedDrafts)) {
+                        if (confirm(`IMPORT ${importedDrafts.length} POSTS? THIS WILL MERGE WITH CURRENT DRAFTS.`)) {
+                            // Merge and prevent duplicates based on ID or Title
+                            importedDrafts.forEach(imp => {
+                                if (!drafts.find(d => d.id === imp.id || d.title === imp.title)) {
+                                    drafts.push(imp);
+                                }
+                            });
+                            saveDraftsToStorage();
+                            updateDraftList();
+                            alert("DATA_SYNCHRONIZED_SUCCESSFULLY");
+                        }
+                    }
+                } catch (err) {
+                    alert("ERR: INVALID_FILE_FORMAT. PLEASE UPLOAD A VALID 'blog_data.js'");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
         }
 
         setInterval(loadLiveStats, 5000);
@@ -252,6 +299,7 @@
         }
 
         function saveBlog() {
+            const idInput = document.getElementById('post-id').value;
             const title = document.getElementById('post-title').value;
             const imageUrl = document.getElementById('post-image-url').value;
             const excerpt = document.getElementById('post-excerpt').value;
@@ -262,26 +310,67 @@
                 return;
             }
 
-            const post = {
-                id: Date.now(),
-                title,
-                excerpt,
-                content,
-                image: imageUrl,
-                date: new Date().toLocaleDateString()
-            };
+            if (isEditing && idInput) {
+                const index = drafts.findIndex(d => d.id == idInput);
+                if (index !== -1) {
+                    drafts[index] = {
+                        ...drafts[index],
+                        title,
+                        image: imageUrl,
+                        excerpt,
+                        content,
+                        lastModified: new Date().toLocaleDateString()
+                    };
+                }
+            } else {
+                const post = {
+                    id: Date.now(),
+                    title,
+                    excerpt,
+                    content,
+                    image: imageUrl,
+                    date: new Date().toLocaleDateString()
+                };
+                drafts.push(post);
+            }
 
-            drafts.push(post);
             saveDraftsToStorage();
             updateDraftList();
+            cancelEdit();
+            alert(isEditing ? "ARCHIVE_UPDATED" : "POST_SAVED_TO_LOCAL_MEMORY");
+        }
+
+        function startEditing(id) {
+            const draft = drafts.find(d => d.id === id);
+            if (!draft) return;
+
+            isEditing = true;
+            document.getElementById('editor-mode-label').innerText = "MODIFY_ARCHIVE_POST";
+            document.getElementById('main-save-btn').innerText = "UPDATE_DRAFT";
+            document.getElementById('cancel-edit-btn').style.display = "block";
             
+            document.getElementById('post-id').value = draft.id;
+            document.getElementById('post-title').value = draft.title;
+            document.getElementById('post-image-url').value = draft.image;
+            document.getElementById('post-excerpt').value = draft.excerpt;
+            document.getElementById('post-content').value = draft.content;
+            
+            handleUrlPreview(draft.image);
+            switchTab('create');
+        }
+
+        function cancelEdit() {
+            isEditing = false;
+            document.getElementById('editor-mode-label').innerText = "INITIALIZE_POST";
+            document.getElementById('main-save-btn').innerText = "PUSH_TO_DRAFT";
+            document.getElementById('cancel-edit-btn').style.display = "none";
+            
+            document.getElementById('post-id').value = '';
             document.getElementById('post-title').value = '';
             document.getElementById('post-image-url').value = '';
             document.getElementById('post-excerpt').value = '';
             document.getElementById('post-content').value = '';
             document.getElementById('img-preview').style.display = 'none';
-
-            alert("POST_SAVED_TO_LOCAL_MEMORY");
         }
 
         function deleteDraft(id) {
@@ -308,8 +397,8 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:10px; align-items:center;">
-                        <span style="color:var(--accent); font-size:0.7rem;">SAVED</span>
-                        <button class="delete-btn" onclick="deleteDraft(${d.id})">PURGE</button>
+                        <button class="action-btn" onclick="startEditing(${d.id})">EDIT</button>
+                        <button class="action-btn delete" onclick="deleteDraft(${d.id})">PURGE</button>
                     </div>
                 </div>
             `).join('');
