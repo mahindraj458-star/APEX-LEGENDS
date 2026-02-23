@@ -3,241 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APEX // THE BLOG</title>
+    <title>APEX // BLOG CREATOR</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&family=Syncopate:wght@700&display=swap" rel="stylesheet">
-    <script src="blog_data.js"></script>
     <style>
         :root {
             --bg: #050505;
             --accent: #ff1111;
-            --text: #eee;
+            --sidebar-w: 260px;
+            --panel: #0a0a0a;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: 'JetBrains Mono', monospace; display: flex; height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            overflow-x: hidden;
-            min-height: 100vh;
+        /* --- SIDEBARS --- */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--panel);
+            border-right: 1px solid #1a1a1a;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* --- BOOK OPENING ANIMATION --- */
-        #book-intro {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
+        .sidebar-right {
+            border-right: none;
+            border-left: 1px solid #1a1a1a;
             background: #000;
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 2000px;
         }
 
-        .book {
-            width: 300px;
-            height: 400px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1);
-        }
-
-        .book-cover {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #111;
-            border: 2px solid var(--accent);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform-origin: left;
-            z-index: 2;
-            backface-visibility: hidden;
-            animation: openBook 2.5s forwards ease-in-out;
-        }
-
-        .book-cover h2 {
-            font-family: 'Syncopate';
-            font-size: 1.2rem;
-            letter-spacing: 5px;
-            color: var(--accent);
-        }
-
-        .book-page {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #eee;
-            color: #000;
-            padding: 20px;
-            z-index: 1;
-        }
-
-        @keyframes openBook {
-            0% { transform: rotateY(0deg); }
-            100% { transform: rotateY(-150deg); }
-        }
-
-        /* --- POPUP SELECTION --- */
-        #gatekeeper {
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(15, 15, 15, 0.95);
-            padding: 50px;
-            border: 1px solid #333;
-            z-index: 10000;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            display: none;
-            box-shadow: 0 0 50px rgba(255,17,17,0.1);
-        }
-
-        .btn-group { display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
-        .row-btns { display: flex; gap: 15px; }
-        .gate-btn {
-            flex: 1;
-            padding: 15px 30px;
-            border: 1px solid var(--accent);
-            background: transparent;
-            color: #fff;
+        .sb-header { font-family: 'Syncopate'; font-size: 0.7rem; color: #444; margin-bottom: 40px; letter-spacing: 2px; }
+        
+        .nav-item {
+            padding: 15px;
+            color: #666;
             cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+            border-left: 0px solid var(--accent);
+        }
+        .nav-item:hover, .nav-item.active {
+            color: #fff;
+            background: rgba(255,17,17,0.05);
+            border-left-width: 3px;
+        }
+
+        .nav-terminate {
+            margin-top: auto;
+            color: #444;
+            border: 1px solid #222;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: 0.3s;
+            font-family: 'Syncopate';
+            margin-bottom: 10px;
+        }
+        .nav-terminate:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: rgba(255,17,17,0.1);
+        }
+
+        /* --- CONTENT --- */
+        .workspace { flex: 1; padding: 60px; overflow-y: auto; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .editor-container { background: var(--panel); border: 1px solid #1a1a1a; padding: 40px; }
+        input, textarea {
+            width: 100%;
+            background: #000;
+            border: 1px solid #222;
+            color: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            outline: none;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+
+        /* Image URL Preview Styling */
+        .url-preview-zone {
+            border: 1px solid #222;
+            background: #000;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .preview-img { max-width: 100%; max-height: 200px; margin-top: 10px; display: none; border: 1px solid #222; }
+
+        .btn-action {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
             font-family: 'Syncopate';
             font-size: 0.7rem;
-            transition: 0.3s;
-        }
-        .gate-btn:hover { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--accent); }
-        
-        .home-btn {
-            border-color: #444;
-            color: #888;
-        }
-        .home-btn:hover {
-            border-color: #fff;
-            background: #fff;
-            color: #000;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+            cursor: pointer;
         }
 
-        /* --- BLOG GRID --- */
-        .blog-container { padding: 100px 10vw; opacity: 0; transition: 1s; }
-        .blog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; }
-        .blog-header h1 { font-family: 'Syncopate'; font-size: 3rem; }
-        .exit-blog { color: var(--accent); text-decoration: none; font-size: 0.7rem; font-family: 'Syncopate'; letter-spacing: 2px; }
-        
-        .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; }
-        .post-card { background: #0a0a0a; border: 1px solid #151515; overflow: hidden; transition: 0.4s; cursor: pointer; text-decoration: none; display: block; }
-        .post-card:hover { border-color: var(--accent); transform: translateY(-10px); }
-        
-        .post-img-wrapper {
-            width: 100%;
-            height: 200px;
+        .stat-card { background: #111; padding: 20px; margin-bottom: 10px; border: 1px solid #1a1a1a; }
+        .stat-card b { color: var(--accent); }
+
+        #download-bar {
+            margin-top: auto;
+            padding: 20px;
             background: #111;
-            overflow: hidden;
+            text-align: center;
         }
-        .post-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.7;
-            transition: 0.5s;
-        }
-        .post-card:hover .post-img-wrapper img { opacity: 1; transform: scale(1.05); }
 
-        .post-meta { padding: 25px; }
-        .post-meta span { font-size: 0.7rem; color: #444; letter-spacing: 2px; }
-        .post-meta h3 { color: var(--accent); margin: 10px 0 15px; font-family: 'Syncopate'; font-size: 1.1rem; }
-        .post-meta p { color: #888; font-size: 0.85rem; line-height: 1.6; }
+        .action-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: #555;
+            padding: 5px 12px;
+            cursor: pointer;
+            font-size: 0.6rem;
+            font-family: 'Syncopate';
+            transition: 0.2s;
+        }
+        .action-btn:hover { color: #fff; border-color: #666; }
+        .action-btn.delete:hover { color: var(--accent); border-color: var(--accent); }
+
+        /* Hidden File Input */
+        #file-import { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="book-intro">
-        <div class="book">
-            <div class="book-cover">
-                <h2>ARCHIVES</h2>
-            </div>
-            <div class="book-page"></div>
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+        <div class="sb-header">CORE_CONTROLS</div>
+        <div class="nav-item active" onclick="switchTab('subscribers')">LIVE_NETWORK_INTEL</div>
+        <div class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
+        <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
+        
+        <div style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;">
+            <label for="file-import" class="nav-terminate" style="display: block; cursor: pointer; color: #888; border-color: #333;">IMPORT_EXISTING_DATA</label>
+            <input type="file" id="file-import" accept=".js" onchange="importData(event)">
         </div>
+
+        <!-- Terminate Session Button -->
+        <div class="nav-terminate" onclick="terminateSession()">TERMINATE_SESSION</div>
     </div>
 
-    <div id="gatekeeper">
-        <h2 style="font-family:'Syncopate'; letter-spacing:5px;">ACCESS_POINT</h2>
-        <p style="margin-top:10px; color:#555;">CHOOSE YOUR DESTINATION</p>
-        <div class="btn-group">
-            <div class="row-btns">
-                <button class="gate-btn" onclick="showBlogs()">SEE_BLOGS</button>
-                <button class="gate-btn" onclick="location.href='login_creator.html'">CREATE_BLOG</button>
+    <!-- MAIN WORKSPACE -->
+    <main class="workspace">
+        <!-- Subscribers Tab -->
+        <div id="subscribers" class="tab-content active">
+            <h2 class="sb-header">REAL_TIME_STATISTICS</h2>
+            <div class="stat-card">UNIQUE_TRAFFIC_HITS: <b id="stat-views">0</b></div>
+            <div class="stat-card">TOTAL_ENGAGEMENTS: <b id="stat-clicks">0</b></div>
+            <div id="recent-activity">
+                <h2 class="sb-header" style="margin-top:40px;">RECENT_ACTIVITY_LOG</h2>
+                <div class="stat-card" style="font-size: 0.7rem; color: #444;">WAITING_FOR_NETWORK_DATA...</div>
             </div>
-            <button class="gate-btn home-btn" onclick="location.href='index.html'">RETURN_HOME</button>
         </div>
-    </div>
 
-    <main class="blog-container" id="main-blog">
-        <div class="blog-header">
-            <h1>THE_BLOG</h1>
-            <a href="index.html" class="exit-blog">[ EXIT_ARCHIVES ]</a>
+        <!-- Create/Edit Tab -->
+        <div id="create" class="tab-content">
+            <h2 class="sb-header" id="editor-mode-label">INITIALIZE_POST</h2>
+            <div class="editor-container">
+                <input type="hidden" id="post-id">
+                <input type="text" id="post-title" placeholder="POST_TITLE">
+                
+                <div class="url-preview-zone">
+                    <input type="text" id="post-image-url" placeholder="IMAGE_URL (e.g. from Postimages.org)" oninput="handleUrlPreview(this.value)">
+                    <img id="img-preview" class="preview-img" alt="URL_PREVIEW">
+                </div>
+
+                <textarea id="post-excerpt" rows="3" placeholder="SHORT_EXCERPT"></textarea>
+                <textarea id="post-content" rows="10" placeholder="FULL_CONTENT_MARKDOWN"></textarea>
+                
+                <div style="display:flex; gap:15px;">
+                    <button id="main-save-btn" class="btn-action" onclick="saveBlog()">PUSH_TO_DRAFT</button>
+                    <button id="cancel-edit-btn" class="btn-action" style="background:#222; display:none;" onclick="cancelEdit()">CANCEL_EDIT</button>
+                </div>
+            </div>
         </div>
-        <div class="blog-grid" id="blog-grid">
-            <!-- Populated by blog_data.js -->
+
+        <!-- Edit/List Tab -->
+        <div id="edit" class="tab-content">
+            <h2 class="sb-header">LOCAL_DRAFTS_ARCHIVE</h2>
+            <div id="draft-list">
+                <p style="color:#333;">NO_DRAFTS_IN_MEMORY</p>
+            </div>
         </div>
     </main>
 
+    <!-- RIGHT SIDEBAR (DOWNLOAD JS) -->
+    <div class="sidebar sidebar-right">
+        <div class="sb-header">DATA_EXPORT</div>
+        <p style="font-size:0.6rem; color:#444; line-height:1.5;">GENERATE 'blog_data.js' TO UPDATE LIVE VIEWERS PAGE.</p>
+        <div id="download-bar">
+            <button class="btn-action" style="width:100%;" onclick="downloadData()">DOWNLOAD.JS</button>
+        </div>
+    </div>
+
     <script>
-        setTimeout(() => {
-            document.getElementById('gatekeeper').style.display = 'block';
-        }, 2000);
+        let drafts = JSON.parse(localStorage.getItem('apex_local_drafts') || '[]');
+        let isEditing = false;
 
-        function trackInteraction(type, detail) {
-            let stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
-            if (type === 'view') stats.views++;
-            if (type === 'click') {
-                stats.clicks.push({ title: detail, time: new Date().toISOString() });
-            }
-            localStorage.setItem('apex_blog_stats', JSON.stringify(stats));
+        window.onload = () => {
+            loadLiveStats();
+            updateDraftList();
+        };
+
+        function saveDraftsToStorage() {
+            localStorage.setItem('apex_local_drafts', JSON.stringify(drafts));
         }
 
-        function showBlogs() {
-            document.getElementById('book-intro').style.opacity = '0';
-            document.getElementById('gatekeeper').style.display = 'none';
-            document.getElementById('main-blog').style.opacity = '1';
-            setTimeout(() => document.getElementById('book-intro').remove(), 1000);
-            loadPosts();
-            trackInteraction('view');
-        }
+        function loadLiveStats() {
+            const stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
+            document.getElementById('stat-views').innerText = stats.views;
+            document.getElementById('stat-clicks').innerText = stats.clicks.length;
 
-        function openPost(postId, postTitle) {
-            trackInteraction('click', postTitle);
-            // Pass the ID to the viewer page via URL parameter
-            window.location.href = `blog_viewer.html?id=${postId}`;
-        }
-
-        function loadPosts() {
-            const grid = document.getElementById('blog-grid');
-            if(window.blogPosts && window.blogPosts.length > 0) {
-                grid.innerHTML = '';
-                window.blogPosts.forEach(post => {
-                    grid.innerHTML += `
-                        <div class="post-card" onclick="openPost('${post.id}', '${post.title.replace(/'/g, "\\'")}')">
-                            <div class="post-img-wrapper">
-                                ${post.image ? `<img src="${post.image}" alt="${post.title}">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#222; font-size:0.6rem;">NO_IMAGE_DATA</div>`}
-                            </div>
-                            <div class="post-meta">
-                                <span>${post.date}</span>
-                                <h3>${post.title}</h3>
-                                <p>${post.excerpt}</p>
-                            </div>
-                        </div>
-                    `;
+            const activityLog = document.getElementById('recent-activity');
+            if (stats.clicks.length > 0) {
+                const recent = stats.clicks.slice(-5).reverse();
+                let html = '<h2 class="sb-header" style="margin-top:40px;">RECENT_ACTIVITY_LOG</h2>';
+                recent.forEach(act => {
+                    html += `<div class="stat-card">USER_OPENED: <b>${act.title}</b> <br><small style="color:#333">${new Date(act.time).toLocaleTimeString()}</small></div>`;
                 });
-            } else {
-                grid.innerHTML = "<p style='color:#333; grid-column: 1/-1;'>NO_DATA_STREAM_FOUND. INITIALIZE_DATA_IN_CREATOR_WORKSPACE.</p>";
+                activityLog.innerHTML = html;
             }
+        }
+
+        function terminateSession() {
+            if(confirm("CONFIRM_SESSION_TERMINATION? ALL LOCAL DRAFTS WILL BE PURGED.")) {
+                localStorage.removeItem('apex_local_drafts');
+                location.href = 'blog.html';
+            }
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                try {
+                    // Extract the JSON from the "window.blogPosts = [...]" string
+                    const jsonStr = content.substring(content.indexOf('=') + 1, content.lastIndexOf(';')).trim();
+                    const importedDrafts = JSON.parse(jsonStr);
+                    
+                    if (Array.isArray(importedDrafts)) {
+                        if (confirm(`IMPORT ${importedDrafts.length} POSTS? THIS WILL MERGE WITH CURRENT DRAFTS.`)) {
+                            // Merge and prevent duplicates based on ID or Title
+                            importedDrafts.forEach(imp => {
+                                if (!drafts.find(d => d.id === imp.id || d.title === imp.title)) {
+                                    drafts.push(imp);
+                                }
+                            });
+                            saveDraftsToStorage();
+                            updateDraftList();
+                            alert("DATA_SYNCHRONIZED_SUCCESSFULLY");
+                        }
+                    }
+                } catch (err) {
+                    alert("ERR: INVALID_FILE_FORMAT. PLEASE UPLOAD A VALID 'blog_data.js'");
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        setInterval(loadLiveStats, 5000);
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if (tabId === 'subscribers') loadLiveStats();
+            if (tabId === 'edit') updateDraftList();
+        }
+
+        function handleUrlPreview(url) {
+            const preview = document.getElementById('img-preview');
+            if (url && url.trim() !== '') {
+                preview.src = url;
+                preview.style.display = 'block';
+                preview.onerror = () => {
+                    preview.style.display = 'none';
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function saveBlog() {
+            const idInput = document.getElementById('post-id').value;
+            const title = document.getElementById('post-title').value;
+            const imageUrl = document.getElementById('post-image-url').value;
+            const excerpt = document.getElementById('post-excerpt').value;
+            const content = document.getElementById('post-content').value;
+            
+            if(!title) {
+                alert("ERR: TITLE_REQUIRED");
+                return;
+            }
+
+            if (isEditing && idInput) {
+                const index = drafts.findIndex(d => d.id == idInput);
+                if (index !== -1) {
+                    drafts[index] = {
+                        ...drafts[index],
+                        title,
+                        image: imageUrl,
+                        excerpt,
+                        content,
+                        lastModified: new Date().toLocaleDateString()
+                    };
+                }
+            } else {
+                const post = {
+                    id: Date.now(),
+                    title,
+                    excerpt,
+                    content,
+                    image: imageUrl,
+                    date: new Date().toLocaleDateString()
+                };
+                drafts.push(post);
+            }
+
+            saveDraftsToStorage();
+            updateDraftList();
+            cancelEdit();
+            alert(isEditing ? "ARCHIVE_UPDATED" : "POST_SAVED_TO_LOCAL_MEMORY");
+        }
+
+        function startEditing(id) {
+            const draft = drafts.find(d => d.id === id);
+            if (!draft) return;
+
+            isEditing = true;
+            document.getElementById('editor-mode-label').innerText = "MODIFY_ARCHIVE_POST";
+            document.getElementById('main-save-btn').innerText = "UPDATE_DRAFT";
+            document.getElementById('cancel-edit-btn').style.display = "block";
+            
+            document.getElementById('post-id').value = draft.id;
+            document.getElementById('post-title').value = draft.title;
+            document.getElementById('post-image-url').value = draft.image;
+            document.getElementById('post-excerpt').value = draft.excerpt;
+            document.getElementById('post-content').value = draft.content;
+            
+            handleUrlPreview(draft.image);
+            switchTab('create');
+        }
+
+        function cancelEdit() {
+            isEditing = false;
+            document.getElementById('editor-mode-label').innerText = "INITIALIZE_POST";
+            document.getElementById('main-save-btn').innerText = "PUSH_TO_DRAFT";
+            document.getElementById('cancel-edit-btn').style.display = "none";
+            
+            document.getElementById('post-id').value = '';
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-image-url').value = '';
+            document.getElementById('post-excerpt').value = '';
+            document.getElementById('post-content').value = '';
+            document.getElementById('img-preview').style.display = 'none';
+        }
+
+        function deleteDraft(id) {
+            if(confirm("DELETE_DRAFT?")) {
+                drafts = drafts.filter(d => d.id !== id);
+                saveDraftsToStorage();
+                updateDraftList();
+            }
+        }
+
+        function updateDraftList() {
+            const list = document.getElementById('draft-list');
+            if (drafts.length === 0) {
+                list.innerHTML = '<p style="color:#333;">NO_DRAFTS_IN_MEMORY</p>';
+                return;
+            }
+            list.innerHTML = drafts.map(d => `
+                <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        ${d.image ? `<img src="${d.image}" style="width:40px; height:40px; object-fit:cover; border:1px solid #333;" onerror="this.src='https://via.placeholder.com/40?text=ERR'">` : ''}
+                        <div>
+                            <div style="font-size:0.8rem;">${d.title}</div>
+                            <div style="font-size:0.6rem; color:#444;">${d.date}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button class="action-btn" onclick="startEditing(${d.id})">EDIT</button>
+                        <button class="action-btn delete" onclick="deleteDraft(${d.id})">PURGE</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function downloadData() {
+            if(drafts.length === 0) {
+                alert("NO_DATA_TO_EXPORT");
+                return;
+            }
+            const dataStr = "window.blogPosts = " + JSON.stringify(drafts, null, 2) + ";";
+            const blob = new Blob([dataStr], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "blog_data.js";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
 </body>
