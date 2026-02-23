@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX // OVERSEER WORKSPACE</title>
+    
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CORE VARIABLES --- */
+        :root {
+            --bg-dark: #030303;
+            --panel-bg: rgba(10, 15, 10, 0.9);
+            --neon-green: #00ff41;
+            --neon-dim: rgba(0, 255, 65, 0.2);
+            --alert-red: #ff1111;
+            --text-main: #e0e0e0;
+            --text-muted: #666;
+            --sidebar-width: 320px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        h1, h2, h3, .sync-font {
+            font-family: 'Syncopate', sans-serif;
+            text-transform: uppercase;
+        }
+
+        /* --- SIDEBAR --- */
+        #sidebar {
+            width: var(--sidebar-width);
+            background: var(--panel-bg);
+            border-right: 1px solid var(--neon-dim);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 0;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.9);
+            z-index: 10;
+        }
+
+        .brand-header {
+            padding: 0 30px 30px 30px;
+            border-bottom: 1px solid var(--neon-dim);
+            margin-bottom: 20px;
+        }
+
+        .brand-header h1 {
+            color: var(--neon-green);
+            font-size: 1.5rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .brand-header p {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 18px 30px;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            height: 100%; width: 3px;
+            background: var(--neon-green);
+            transform: scaleY(0);
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover { color: #fff; background: rgba(0, 255, 65, 0.05); }
+        .nav-btn.active { color: var(--neon-green); background: rgba(0, 255, 65, 0.1); }
+        .nav-btn.active::before { transform: scaleY(1); }
+
+        /* EXPORT CENTER */
+        .export-section {
+            margin-top: auto;
+            padding: 20px 30px;
+            border-top: 1px solid var(--neon-dim);
+        }
+
+        .export-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        .export-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .export-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--neon-dim);
+            color: var(--neon-green);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .export-btn:hover {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 65, 0.15);
+            box-shadow: 0 0 15px rgba(0,255,65,0.1);
+        }
+
+        .export-btn span { opacity: 0.5; font-size: 0.6rem; }
+
+        /* --- MAIN WORKSPACE --- */
+        #workspace {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .tab-content {
+            display: none;
+            max-width: 1100px;
+            margin: 0 auto;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            color: #fff;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--neon-dim);
+            padding-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- DATA TABLES --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid var(--neon-dim);
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 15px;
+            background: rgba(0, 255, 65, 0.05);
+            color: var(--neon-green);
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--neon-dim);
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .data-table tr:hover td { background: rgba(0, 255, 65, 0.02); color: #fff; }
+
+        .btn-delete {
+            background: transparent;
+            border: 1px solid var(--alert-red);
+            color: var(--alert-red);
+            padding: 5px 15px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-delete:hover { background: var(--alert-red); color: #fff; }
+
+        /* --- FORM STYLES --- */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        .form-group label {
+            display: block;
+            color: var(--neon-green);
+            font-size: 0.65rem;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid var(--neon-dim);
+            color: #fff;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--neon-green); }
+
+        .form-section-header {
+            grid-column: 1 / -1;
+            color: #888;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            margin: 30px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .form-section-header::after { content: ''; flex: 1; height: 1px; background: #222; }
+
+        .btn-submit {
+            grid-column: 1 / -1;
+            background: var(--neon-green);
+            color: #000;
+            border: none;
+            padding: 20px;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover { box-shadow: 0 0 30px rgba(0,255,65,0.4); transform: translateY(-2px); }
+
+        #notification {
+            position: fixed;
+            bottom: 30px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--neon-green);
+            color: #000;
+            padding: 15px 40px;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+            z-index: 9999;
+        }
+
+        #notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <nav id="sidebar">
+        <div class="brand-header">
+            <h1 class="sync-font">APEX</h1>
+            <p>OVERSEER_TERMINAL v5.0</p>
+        </div>
+
+        <button class="nav-btn active" onclick="switchTab('tab-bloggers')">[01] MANAGE_BLOGGERS</button>
+        <button class="nav-btn" onclick="switchTab('tab-blogs')">[02] CONTENT_CONTROL</button>
+        <button class="nav-btn" onclick="switchTab('tab-showroom')">[03] SHOWROOM_CREATOR</button>
+
+        <div class="export-section">
+            <span class="export-label">// GLOBAL_EXPORT_CENTER</span>
+            <div class="export-grid">
+                <button class="export-btn" onclick="exportData('dat.js')">
+                    EXPORT_SHOWROOM <span>DAT.JS</span>
+                </button>
+                <button class="export-btn" onclick="exportData('blog_data.js')">
+                    EXPORT_CONTENT <span>BLOG_DATA.JS</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN WORKSPACE -->
+    <main id="workspace">
+        
+        <!-- TAB 1: BLOGGERS -->
+        <section id="tab-bloggers" class="tab-content active">
+            <div class="section-title">
+                <span class="sync-font">REGISTERED_BLOGGERS</span>
+                <span style="font-size: 0.7rem; color: var(--neon-green);">ACTIVE_OPS: <span id="blogger-count">0</span></span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>AUTH_ID</th>
+                        <th>ALIAS</th>
+                        <th>JOIN_DATE</th>
+                        <th>STATUS</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="blogger-table-body"></tbody>
+            </table>
+        </section>
+
+        <!-- TAB 2: BLOGS -->
+        <section id="tab-blogs" class="tab-content">
+            <div class="section-title">
+                <span class="sync-font">BLOG_CONTROL_PANEL</span>
+                <span style="font-size: 0.7rem; color: var(--neon-green);">TOTAL_DOCS: <span id="blog-count">0</span></span>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>DOC_ID</th>
+                        <th>TITLE</th>
+                        <th>AUTHOR_ID</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="blog-table-body"></tbody>
+            </table>
+        </section>
+
+        <!-- TAB 3: SHOWROOM CREATOR -->
+        <section id="tab-showroom" class="tab-content">
+            <div class="section-title">
+                <span class="sync-font">SHOWROOM_ASSET_INJECTION</span>
+                <span style="font-size: 0.6rem; color: var(--text-muted);">// POPULATE_SHOWROOM_DAT</span>
+            </div>
+            
+            <form id="showroom-form" onsubmit="handleShowroomSubmit(event)">
+                <div class="form-grid">
+                    <!-- IDENTITY -->
+                    <div class="form-section-header">01 // IDENTITY_&_MARKET</div>
+                    <div class="form-group">
+                        <label>UNIT NAME</label>
+                        <input type="text" id="sr-name" required placeholder="e.g. Ferrari F40">
+                    </div>
+                    <div class="form-group">
+                        <label>MARKET STATUS</label>
+                        <select id="sr-market">
+                            <option value="In Production">In Production</option>
+                            <option value="Discontinued / Collector Only">Discontinued / Collector Only</option>
+                            <option value="Concept / Prototype">Concept / Prototype</option>
+                            <option value="Out of Market">Out of Market</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>YEAR</label>
+                        <input type="text" id="sr-year" required placeholder="1987-1992">
+                    </div>
+                    <div class="form-group">
+                        <label>GEOGRAPHIC ORIGIN (How it originated)</label>
+                        <input type="text" id="sr-origin" required placeholder="Maranello, Italy - Racing Pedigree">
+                    </div>
+
+                    <!-- ASSETS -->
+                    <div class="form-section-header">02 // MULTIMEDIA_PIPELINE</div>
+                    <div class="form-group">
+                        <label>DESKTOP ASSET (16:9)</label>
+                        <input type="url" id="sr-img-desk" required placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label>MOBILE ASSET (9:16)</label>
+                        <input type="url" id="sr-img-mob" required placeholder="https://...">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>3D_MODEL_RENDER_PATH</label>
+                        <input type="text" id="sr-model" placeholder="Spline/ThreeJS Hash or URL">
+                    </div>
+
+                    <!-- TELEMETRY -->
+                    <div class="form-section-header">03 // TECHNICAL_TELEMETRY</div>
+                    <div class="form-group">
+                        <label>ENGINE CONFIGURATION</label>
+                        <input type="text" id="sr-engine" required placeholder="2.9L Twin-Turbo V8">
+                    </div>
+                    <div class="form-group">
+                        <label>OUTPUT (HP/BHP)</label>
+                        <input type="text" id="sr-hp" required placeholder="471 HP">
+                    </div>
+                    <div class="form-group">
+                        <label>LIMIT_VELOCITY</label>
+                        <input type="text" id="sr-speed" required placeholder="201 MPH">
+                    </div>
+                    <div class="form-group">
+                        <label>TOTAL_PRODUCTION</label>
+                        <input type="text" id="sr-prod" required placeholder="1,311 Units">
+                    </div>
+
+                    <!-- LORE & SPECIALS -->
+                    <div class="form-section-header">04 // SPECIALITIES_&_LEGACY</div>
+                    <div class="form-group full-width">
+                        <label>WHY IS THIS CAR SPECIAL? (KEY DIFFERENTIATOR)</label>
+                        <textarea id="sr-special-reason" required placeholder="Explain why this car stands above the rest..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>CORE NARRATIVE (HISTORY)</label>
+                        <textarea id="sr-story" required placeholder="Enter the historical deep dive..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>NOTABLE FIRST OWNER / BUYER</label>
+                        <input type="text" id="sr-owner" placeholder="e.g. Nigel Mansell">
+                    </div>
+                    <div class="form-group">
+                        <label>HIGHEST RECORD BUY</label>
+                        <input type="text" id="sr-record" placeholder="e.g. $2.15M (Auction 2022)">
+                    </div>
+                    <div class="form-group">
+                        <label>CINEMATIC FEATURES (TITLE LIST)</label>
+                        <input type="text" id="sr-movies" placeholder="e.g. James Bond, Tokyo Drift">
+                    </div>
+                    <div class="form-group">
+                        <label>CINEMATIC ASSET URL (MOVIE STILL/POSTER)</label>
+                        <input type="url" id="sr-movie-img" placeholder="https://image-url-from-movie.jpg">
+                    </div>
+
+                    <button type="submit" class="btn-submit">INJECT_ASSET_TO_BUFFER</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <div id="notification">SYSTEM_UPDATED</div>
+
+    <script>
+        // Separate Data Buffers
+        let db = {
+            bloggers: [
+                { id: "USR-001", name: "NightRider", date: "2024-01-12", status: "ACTIVE" },
+                { id: "USR-089", name: "V12_Prophet", date: "2024-03-05", status: "ACTIVE" }
+            ],
+            blogs: [
+                { id: "DOC-992", title: "The Aero Magic of 992", author: "USR-001" },
+                { id: "DOC-F40", title: "F40: The Last Analog King", author: "USR-089" }
+            ],
+            showroom: []
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content, .nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function showNotification(msg) {
+            const notif = document.getElementById('notification');
+            notif.innerText = msg;
+            notif.classList.add('show');
+            setTimeout(() => notif.classList.remove('show'), 3000);
+        }
+
+        function renderTables() {
+            // Bloggers
+            const bTable = document.getElementById('blogger-table-body');
+            document.getElementById('blogger-count').innerText = db.bloggers.length;
+            bTable.innerHTML = db.bloggers.map(u => `
+                <tr>
+                    <td style="color:var(--neon-green)">${u.id}</td>
+                    <td>${u.name}</td>
+                    <td>${u.date}</td>
+                    <td>${u.status}</td>
+                    <td><button class="btn-delete" onclick="deleteItem('bloggers', '${u.id}')">ERASE</button></td>
+                </tr>
+            `).join('');
+
+            // Blogs
+            const blTable = document.getElementById('blog-table-body');
+            document.getElementById('blog-count').innerText = db.blogs.length;
+            blTable.innerHTML = db.blogs.map(b => `
+                <tr>
+                    <td style="color:var(--neon-green)">${b.id}</td>
+                    <td>${b.title}</td>
+                    <td>${b.author}</td>
+                    <td><button class="btn-delete" onclick="deleteItem('blogs', '${b.id}')">PURGE</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteItem(type, id) {
+            if(confirm(`Confirm permanent deletion of ${id}?`)) {
+                db[type] = db[type].filter(item => item.id !== id);
+                renderTables();
+                showNotification(`${id} REMOVED FROM BUFFER`);
+            }
+        }
+
+        function handleShowroomSubmit(e) {
+            e.preventDefault();
+            const newCar = {
+                id: "CAR-" + Date.now().toString().slice(-4),
+                name: document.getElementById('sr-name').value,
+                marketStatus: document.getElementById('sr-market').value,
+                year: document.getElementById('sr-year').value,
+                originHistory: document.getElementById('sr-origin').value,
+                images: {
+                    desktop: document.getElementById('sr-img-desk').value,
+                    mobile: document.getElementById('sr-img-mob').value
+                },
+                model3D: document.getElementById('sr-model').value,
+                specs: {
+                    engine: document.getElementById('sr-engine').value,
+                    hp: document.getElementById('sr-hp').value,
+                    topSpeed: document.getElementById('sr-speed').value,
+                    production: document.getElementById('sr-prod').value
+                },
+                legacy: {
+                    specialReason: document.getElementById('sr-special-reason').value,
+                    story: document.getElementById('sr-story').value,
+                    firstOwner: document.getElementById('sr-owner').value,
+                    recordPrice: document.getElementById('sr-record').value,
+                    mediaList: document.getElementById('sr-movies').value,
+                    mediaImage: document.getElementById('sr-movie-img').value
+                }
+            };
+            db.showroom.push(newCar);
+            showNotification(`${newCar.name} INJECTED`);
+            e.target.reset();
+        }
+
+        function exportData(filename) {
+            let content = `/* APEX EXPORT // ${filename.toUpperCase()} // ${new Date().toLocaleString()} */\n\n`;
+            
+            if(filename === 'dat.js') {
+                content += `window.carDatabase = ${JSON.stringify(db.showroom, null, 4)};`;
+            } else {
+                content += `window.bloggers = ${JSON.stringify(db.bloggers, null, 4)};\n`;
+                content += `window.blogs = ${JSON.stringify(db.blogs, null, 4)};`;
+            }
+
+            const blob = new Blob([content], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            showNotification(`${filename} COMPILED`);
+        }
+
+        window.onload = renderTables;
+    </script>
+</body>
+</html>
