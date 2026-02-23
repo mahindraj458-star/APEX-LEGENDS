@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
 
+    <!-- LOAD EXTERNAL BLOG DATA -->
+    <script src="blog_data.js" onerror="console.log('blog_data.js not initialized yet.')"></script>
+
     <style>
         /* --- CORE VARIABLES --- */
         :root {
@@ -312,7 +315,7 @@
     <nav id="sidebar">
         <div class="brand-header">
             <h1 class="sync-font">APEX</h1>
-            <p>OVERSEER_TERMINAL v5.0</p>
+            <p>OVERSEER_TERMINAL v5.2</p>
         </div>
 
         <button class="nav-btn active" onclick="switchTab('tab-bloggers')">[01] MANAGE_BLOGGERS</button>
@@ -335,7 +338,7 @@
     <!-- MAIN WORKSPACE -->
     <main id="workspace">
         
-        <!-- TAB 1: BLOGGERS -->
+        <!-- TAB 1: BLOGGERS (Sync with login_creator.html) -->
         <section id="tab-bloggers" class="tab-content active">
             <div class="section-title">
                 <span class="sync-font">REGISTERED_BLOGGERS</span>
@@ -344,10 +347,9 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>AUTH_ID</th>
                         <th>ALIAS</th>
                         <th>JOIN_DATE</th>
-                        <th>STATUS</th>
+                        <th>AUTH_ID</th>
                         <th>ACTION</th>
                     </tr>
                 </thead>
@@ -355,7 +357,7 @@
             </table>
         </section>
 
-        <!-- TAB 2: BLOGS -->
+        <!-- TAB 2: BLOGS (Sync with blog_data.js) -->
         <section id="tab-blogs" class="tab-content">
             <div class="section-title">
                 <span class="sync-font">BLOG_CONTROL_PANEL</span>
@@ -364,9 +366,9 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>DOC_ID</th>
                         <th>TITLE</th>
-                        <th>AUTHOR_ID</th>
+                        <th>AUTHOR</th>
+                        <th>DOC_ID</th>
                         <th>ACTION</th>
                     </tr>
                 </thead>
@@ -403,8 +405,8 @@
                         <input type="text" id="sr-year" required placeholder="1987-1992">
                     </div>
                     <div class="form-group">
-                        <label>GEOGRAPHIC ORIGIN (How it originated)</label>
-                        <input type="text" id="sr-origin" required placeholder="Maranello, Italy - Racing Pedigree">
+                        <label>GEOGRAPHIC ORIGIN</label>
+                        <input type="text" id="sr-origin" required placeholder="Maranello, Italy">
                     </div>
 
                     <!-- ASSETS -->
@@ -444,28 +446,20 @@
                     <!-- LORE & SPECIALS -->
                     <div class="form-section-header">04 // SPECIALITIES_&_LEGACY</div>
                     <div class="form-group full-width">
-                        <label>WHY IS THIS CAR SPECIAL? (KEY DIFFERENTIATOR)</label>
-                        <textarea id="sr-special-reason" required placeholder="Explain why this car stands above the rest..."></textarea>
+                        <label>WHY IS THIS CAR SPECIAL?</label>
+                        <textarea id="sr-special-reason" required placeholder="Key differentiator..."></textarea>
                     </div>
                     <div class="form-group full-width">
                         <label>CORE NARRATIVE (HISTORY)</label>
-                        <textarea id="sr-story" required placeholder="Enter the historical deep dive..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>NOTABLE FIRST OWNER / BUYER</label>
-                        <input type="text" id="sr-owner" placeholder="e.g. Nigel Mansell">
-                    </div>
-                    <div class="form-group">
-                        <label>HIGHEST RECORD BUY</label>
-                        <input type="text" id="sr-record" placeholder="e.g. $2.15M (Auction 2022)">
+                        <textarea id="sr-story" required placeholder="Historical deep dive..."></textarea>
                     </div>
                     <div class="form-group">
                         <label>CINEMATIC FEATURES (TITLE LIST)</label>
-                        <input type="text" id="sr-movies" placeholder="e.g. James Bond, Tokyo Drift">
+                        <input type="text" id="sr-movies" placeholder="e.g. James Bond">
                     </div>
                     <div class="form-group">
-                        <label>CINEMATIC ASSET URL (MOVIE STILL/POSTER)</label>
-                        <input type="url" id="sr-movie-img" placeholder="https://image-url-from-movie.jpg">
+                        <label>CINEMATIC ASSET URL (MOVIE STILL)</label>
+                        <input type="url" id="sr-movie-img" placeholder="https://...">
                     </div>
 
                     <button type="submit" class="btn-submit">INJECT_ASSET_TO_BUFFER</button>
@@ -477,18 +471,10 @@
     <div id="notification">SYSTEM_UPDATED</div>
 
     <script>
-        // Separate Data Buffers
-        let db = {
-            bloggers: [
-                { id: "USR-001", name: "NightRider", date: "2024-01-12", status: "ACTIVE" },
-                { id: "USR-089", name: "V12_Prophet", date: "2024-03-05", status: "ACTIVE" }
-            ],
-            blogs: [
-                { id: "DOC-992", title: "The Aero Magic of 992", author: "USR-001" },
-                { id: "DOC-F40", title: "F40: The Last Analog King", author: "USR-089" }
-            ],
-            showroom: []
-        };
+        // CORE STATE - Sourced from Persistent Storage and External Files
+        let activeCreators = JSON.parse(localStorage.getItem('apex_authorized_creators')) || [];
+        let blogDataFeed = window.blogData || []; // Loaded from blog_data.js
+        let showroomBuffer = [];
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content, .nav-btn').forEach(el => el.classList.remove('active'));
@@ -503,41 +489,74 @@
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
 
-        function renderTables() {
-            // Bloggers
-            const bTable = document.getElementById('blogger-table-body');
-            document.getElementById('blogger-count').innerText = db.bloggers.length;
-            bTable.innerHTML = db.bloggers.map(u => `
-                <tr>
-                    <td style="color:var(--neon-green)">${u.id}</td>
-                    <td>${u.name}</td>
-                    <td>${u.date}</td>
-                    <td>${u.status}</td>
-                    <td><button class="btn-delete" onclick="deleteItem('bloggers', '${u.id}')">ERASE</button></td>
-                </tr>
-            `).join('');
-
-            // Blogs
-            const blTable = document.getElementById('blog-table-body');
-            document.getElementById('blog-count').innerText = db.blogs.length;
-            blTable.innerHTML = db.blogs.map(b => `
-                <tr>
-                    <td style="color:var(--neon-green)">${b.id}</td>
-                    <td>${b.title}</td>
-                    <td>${b.author}</td>
-                    <td><button class="btn-delete" onclick="deleteItem('blogs', '${b.id}')">PURGE</button></td>
-                </tr>
-            `).join('');
-        }
-
-        function deleteItem(type, id) {
-            if(confirm(`Confirm permanent deletion of ${id}?`)) {
-                db[type] = db[type].filter(item => item.id !== id);
+        // --- BLOGGER SYNC LOGIC (Sourced from login_creator.html events) ---
+        function checkIncomingRegistrations() {
+            const latestEventRaw = localStorage.getItem('latest_creator_event');
+            if (latestEventRaw) {
+                const event = JSON.parse(latestEventRaw);
+                if (event.action === 'REGISTRATION') {
+                    // Check if they already exist
+                    const exists = activeCreators.find(c => c.name === event.user);
+                    if (!exists) {
+                        activeCreators.push({
+                            name: event.user,
+                            date: new Date(event.timestamp).toLocaleDateString(),
+                            id: "AUTH-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                        });
+                        localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
+                    }
+                }
+                localStorage.removeItem('latest_creator_event'); // Clear event
                 renderTables();
-                showNotification(`${id} REMOVED FROM BUFFER`);
             }
         }
 
+        function renderTables() {
+            // Bloggers Table
+            const bTable = document.getElementById('blogger-table-body');
+            document.getElementById('blogger-count').innerText = activeCreators.length;
+            
+            if (activeCreators.length === 0) {
+                bTable.innerHTML = `<tr><td colspan="4" style="text-align:center; opacity:0.3">WAITING_FOR_REGISTRATIONS...</td></tr>`;
+            } else {
+                bTable.innerHTML = activeCreators.map(u => `
+                    <tr>
+                        <td style="color:#fff">${u.name}</td>
+                        <td>${u.date}</td>
+                        <td style="color:var(--neon-green)">${u.id}</td>
+                        <td><button class="btn-delete" onclick="removeCreator('${u.id}')">REVOKE</button></td>
+                    </tr>
+                `).join('');
+            }
+
+            // Blogs Table
+            const blTable = document.getElementById('blog-table-body');
+            document.getElementById('blog-count').innerText = blogDataFeed.length;
+            
+            if (blogDataFeed.length === 0) {
+                blTable.innerHTML = `<tr><td colspan="4" style="text-align:center; opacity:0.3">NO_DATA_IN_BLOG_DATA.JS</td></tr>`;
+            } else {
+                blTable.innerHTML = blogDataFeed.map(b => `
+                    <tr>
+                        <td style="color:#fff">${b.title}</td>
+                        <td>${b.author || 'UNKNOWN'}</td>
+                        <td>${b.id || 'N/A'}</td>
+                        <td><button class="btn-delete" onclick="showNotification('DELETE_VIA_JS_FILE')">LOCKED</button></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function removeCreator(id) {
+            if(confirm(`Revoke access for ${id}?`)) {
+                activeCreators = activeCreators.filter(item => item.id !== id);
+                localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
+                renderTables();
+                showNotification(`AUTH_REVOKED`);
+            }
+        }
+
+        // --- SHOWROOM LOGIC ---
         function handleShowroomSubmit(e) {
             e.preventDefault();
             const newCar = {
@@ -545,40 +564,29 @@
                 name: document.getElementById('sr-name').value,
                 marketStatus: document.getElementById('sr-market').value,
                 year: document.getElementById('sr-year').value,
-                originHistory: document.getElementById('sr-origin').value,
                 images: {
                     desktop: document.getElementById('sr-img-desk').value,
                     mobile: document.getElementById('sr-img-mob').value
                 },
                 model3D: document.getElementById('sr-model').value,
-                specs: {
-                    engine: document.getElementById('sr-engine').value,
-                    hp: document.getElementById('sr-hp').value,
-                    topSpeed: document.getElementById('sr-speed').value,
-                    production: document.getElementById('sr-prod').value
-                },
                 legacy: {
-                    specialReason: document.getElementById('sr-special-reason').value,
                     story: document.getElementById('sr-story').value,
-                    firstOwner: document.getElementById('sr-owner').value,
-                    recordPrice: document.getElementById('sr-record').value,
                     mediaList: document.getElementById('sr-movies').value,
                     mediaImage: document.getElementById('sr-movie-img').value
                 }
             };
-            db.showroom.push(newCar);
-            showNotification(`${newCar.name} INJECTED`);
+            showroomBuffer.push(newCar);
+            showNotification(`${newCar.name.toUpperCase()} CACHED`);
             e.target.reset();
         }
 
         function exportData(filename) {
-            let content = `/* APEX EXPORT // ${filename.toUpperCase()} // ${new Date().toLocaleString()} */\n\n`;
+            let content = `/* APEX EXPORT // ${new Date().toLocaleString()} */\n\n`;
             
             if(filename === 'dat.js') {
-                content += `window.carDatabase = ${JSON.stringify(db.showroom, null, 4)};`;
+                content += `window.carDatabase = ${JSON.stringify(showroomBuffer, null, 4)};`;
             } else {
-                content += `window.bloggers = ${JSON.stringify(db.bloggers, null, 4)};\n`;
-                content += `window.blogs = ${JSON.stringify(db.blogs, null, 4)};`;
+                content += `window.blogData = ${JSON.stringify(blogDataFeed, null, 4)};`;
             }
 
             const blob = new Blob([content], { type: 'text/javascript' });
@@ -587,10 +595,14 @@
             a.href = url;
             a.download = filename;
             a.click();
-            showNotification(`${filename} COMPILED`);
+            showNotification(`${filename} DOWNLOADED`);
         }
 
-        window.onload = renderTables;
+        window.onload = () => {
+            renderTables();
+            // Start polling for new creator registrations
+            setInterval(checkIncomingRegistrations, 2000);
+        };
     </script>
 </body>
 </html>
