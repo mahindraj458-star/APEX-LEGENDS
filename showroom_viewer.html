@@ -17,6 +17,7 @@
             --bg: #050505;
             --accent: #ff1111;
             --text: #ffffff;
+            --ai-glow: #8e44ad;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -83,7 +84,77 @@
         /* --- 3D VIEWER --- */
         .model-section { height: 100vh; background: #000; padding: 0; position: relative; }
         model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
-        .viewer-hint { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); color: #444; font-size: 0.6rem; letter-spacing: 2px; font-family: 'Syncopate'; }
+        .viewer-hint { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: #444; font-size: 0.6rem; letter-spacing: 2px; font-family: 'Syncopate'; text-align: center;}
+
+        /* --- 3D ATTRIBUTION DISCLAIMER --- */
+        .attribution-disclaimer {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            color: #555;
+            letter-spacing: 1px;
+            line-height: 1.4;
+            max-width: 800px;
+        }
+        .attribution-disclaimer a {
+            color: #777;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .attribution-disclaimer a:hover {
+            color: var(--accent);
+        }
+
+        /* --- AI DEEP DIVE PANEL --- */
+        .ai-analysis-panel {
+            background: rgba(15, 15, 15, 0.8);
+            border: 1px solid #222;
+            padding: 40px;
+            margin-top: -80px;
+            position: relative;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        .ai-badge {
+            background: var(--ai-glow);
+            color: white;
+            font-family: 'Syncopate';
+            font-size: 0.55rem;
+            padding: 4px 10px;
+            letter-spacing: 2px;
+        }
+        .ai-content {
+            font-size: 0.95rem;
+            color: #aaa;
+            line-height: 1.7;
+            font-style: italic;
+        }
+        .ai-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ai-glow);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+        .pulse { animation: pulse-anim 2s infinite; }
+        @keyframes pulse-anim { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
         /* --- CINEMATIC FEATURE --- */
         .cinematic-wrap {
@@ -108,6 +179,7 @@
             .hero-title-box h1 { font-size: 12vw; }
             .cinematic-wrap { flex-direction: column; padding: 40px; }
             .cinematic-poster { width: 100%; height: auto; }
+            .ai-analysis-panel { margin: 20px 10vw; }
         }
     </style>
 </head>
@@ -163,7 +235,20 @@
     <section class="model-section">
         <div class="viewer-hint">USE MOUSE TO ROTATE // SCROLL TO ZOOM</div>
         <div id="viewer-container" style="width:100%; height:100%;"></div>
+        <!-- Attribution Area -->
+        <div id="attribution-container" class="attribution-disclaimer"></div>
     </section>
+
+    <!-- ✨ GEMINI AI DEEP DIVE -->
+    <div class="ai-analysis-panel">
+        <div class="ai-header">
+            <div class="ai-badge">✨ NEXUS_AI_DEEP_DIVE</div>
+            <div id="ai-status" class="ai-loading pulse">CONNECTING_TO_NEXUS...</div>
+        </div>
+        <div id="ai-analysis-content" class="ai-content">
+            Initialising neural reconstruction of vehicle technical significance...
+        </div>
+    </div>
 
     <section id="cinematic-section">
         <span class="section-label">// CINEMATIC_LEGACY</span>
@@ -181,6 +266,8 @@
     </footer>
 
     <script>
+        const apiKey = ""; 
+        
         // Data Fetching
         const carId = typeof localStorage !== 'undefined' ? localStorage.getItem('selected_car_id') : null;
         const db = window.carDatabase || [];
@@ -190,6 +277,48 @@
             document.getElementById('error-overlay').style.display = 'flex';
         } else {
             initViewer();
+            generateAIDeepDive();
+        }
+
+        async function generateAIDeepDive() {
+            const statusEl = document.getElementById('ai-status');
+            const contentEl = document.getElementById('ai-analysis-content');
+            
+            try {
+                const prompt = `Perform a high-level technical and cultural deep dive on the following vehicle: 
+                Name: ${car.name}
+                Specs: ${car.specs?.engine}, ${car.specs?.hp} HP, ${car.specs?.topSpeed}.
+                Context: ${car.legacy?.specialReason}.
+                Tone: Cold, professional, futuristic automotive analysis. Max 80 words.`;
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                
+                let response;
+                for(let i=0; i<3; i++) {
+                    response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: { parts: [{ text: "You are the APEX Nexus AI, an advanced automotive archival system." }] }
+                        })
+                    });
+                    if (response.ok) break;
+                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                }
+
+                if (!response.ok) throw new Error();
+                
+                const result = await response.json();
+                const aiText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                statusEl.innerText = "ANALYSIS_COMPLETE";
+                statusEl.classList.remove('pulse');
+                contentEl.innerHTML = `"${aiText}"`;
+            } catch (err) {
+                statusEl.innerText = "NEXUS_OFFLINE";
+                contentEl.innerText = "Could not establish neural link with Gemini. Archival data unavailable.";
+            }
         }
 
         function initViewer() {
@@ -215,7 +344,6 @@
             }
 
             // Cinematic / Media Section
-            // Map specifically to the 'cinematicDescription' key from the JS file
             const mediaTitle = car.legacy?.mediaList || "ARCHIVED_ASSET";
             const mediaImg = car.legacy?.mediaImage || "";
             const cinematicDesc = car.legacy?.cinematicDescription;
@@ -223,7 +351,6 @@
             document.getElementById('media-title').innerText = mediaTitle;
             document.getElementById('media-img').src = mediaImg;
             
-            // Priority check for cinematicDescription
             if (cinematicDesc && cinematicDesc.length > 5) {
                 document.getElementById('cinematic-main-desc').innerText = cinematicDesc;
             } else {
@@ -232,6 +359,8 @@
 
             // 3D Model
             const container = document.getElementById('viewer-container');
+            const attrContainer = document.getElementById('attribution-container');
+
             if (car.model3D) {
                 container.innerHTML = `
                     <model-viewer 
@@ -243,6 +372,13 @@
                         exposure="1"
                         interaction-prompt="none">
                     </model-viewer>`;
+                
+                // Set Attribution if exists in dat.js
+                if (car.attribution) {
+                    attrContainer.innerHTML = car.attribution;
+                } else {
+                    attrContainer.style.display = 'none';
+                }
             }
         }
 
