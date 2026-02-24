@@ -13,6 +13,7 @@
             --bg: #050505;
             --accent: #ff1111;
             --text: #eee;
+            --panel: #0d0d0d;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -68,22 +69,12 @@
             color: var(--accent);
         }
 
-        .book-page {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #eee;
-            color: #000;
-            padding: 20px;
-            z-index: 1;
-        }
-
         @keyframes openBook {
             0% { transform: rotateY(0deg); }
             100% { transform: rotateY(-150deg); }
         }
 
-        /* --- POPUP SELECTION --- */
+        /* --- GATEKEEPER POPUP --- */
         #gatekeeper {
             position: fixed;
             top: 50%; left: 50%;
@@ -112,77 +103,63 @@
             transition: 0.3s;
         }
         .gate-btn:hover { background: var(--accent); color: #fff; box-shadow: 0 0 20px var(--accent); }
-        
-        .home-btn {
-            border-color: #444;
-            color: #888;
-        }
-        .home-btn:hover {
-            border-color: #fff;
-            background: #fff;
-            color: #000;
-            box-shadow: 0 0 20px rgba(255,255,255,0.2);
-        }
 
         /* --- BLOG GRID --- */
         .blog-container { padding: 100px 10vw; opacity: 0; transition: 1s; }
         .blog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px; }
         .blog-header h1 { font-family: 'Syncopate'; font-size: 3rem; }
-        .exit-blog { color: var(--accent); text-decoration: none; font-size: 0.7rem; font-family: 'Syncopate'; letter-spacing: 2px; }
         
+        /* --- AI PANEL --- */
+        .ai-panel {
+            background: var(--panel);
+            border: 1px solid #222;
+            padding: 20px;
+            margin-bottom: 40px;
+            border-radius: 4px;
+        }
+        .ai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .ai-title { font-family: 'Syncopate'; font-size: 0.7rem; color: var(--accent); }
+        .ai-content { font-size: 0.8rem; color: #888; line-height: 1.6; }
+        .ai-btn {
+            background: transparent; border: 1px solid #333; color: #666;
+            padding: 5px 12px; font-family: 'Syncopate'; font-size: 0.55rem;
+            cursor: pointer; transition: 0.3s;
+        }
+        .ai-btn:hover { border-color: var(--accent); color: #fff; }
+
         .blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 40px; }
-        .post-card { background: #0a0a0a; border: 1px solid #151515; overflow: hidden; transition: 0.4s; cursor: pointer; text-decoration: none; display: block; }
-        .post-card:hover { border-color: var(--accent); transform: translateY(-10px); }
+        .post-card { background: #0a0a0a; border: 1px solid #151515; cursor: pointer; transition: 0.4s; }
+        .post-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        .post-img-wrapper { height: 200px; background: #111; overflow: hidden; }
+        .post-img-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; transition: 0.5s; }
+        .post-card:hover img { opacity: 1; }
+        .post-meta { padding: 20px; }
+        .post-meta h3 { color: var(--accent); font-family: 'Syncopate'; font-size: 1rem; margin-bottom: 10px; }
+        .post-meta p { color: #666; font-size: 0.8rem; }
+
+        /* --- INTERNAL VIEWER OVERLAY --- */
+        #post-viewer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 10001;
+            display: none;
+            overflow-y: auto;
+            padding: 80px 15vw;
+        }
+        .viewer-close {
+            position: fixed; top: 40px; right: 40px;
+            font-family: 'Syncopate'; color: var(--accent);
+            cursor: pointer; font-size: 0.8rem;
+        }
+        .view-content h1 { font-family: 'Syncopate'; font-size: 2.5rem; margin-bottom: 20px; color: #fff; }
+        .view-date { color: var(--accent); font-size: 0.7rem; margin-bottom: 40px; display: block; }
+        .view-body { line-height: 1.8; color: #ccc; font-size: 1rem; }
+        .view-body img { width: 100%; max-height: 500px; object-fit: cover; margin: 30px 0; border: 1px solid #333; }
         
-        .post-img-wrapper {
-            width: 100%;
-            height: 200px;
-            background: #111;
-            overflow: hidden;
-        }
-        .post-img-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.7;
-            transition: 0.5s;
-        }
-        .post-card:hover .post-img-wrapper img { opacity: 1; transform: scale(1.05); }
-
-        .post-meta { padding: 25px; }
-        .post-meta span { font-size: 0.7rem; color: #444; letter-spacing: 2px; }
-        .post-meta h3 { color: var(--accent); margin: 10px 0 15px; font-family: 'Syncopate'; font-size: 1.1rem; }
-        .post-meta p { color: #888; font-size: 0.85rem; line-height: 1.6; }
-
-        /* --- MOBILE RESPONSIVENESS --- */
-        @media (max-width: 768px) {
-            #gatekeeper {
-                width: 90%;
-                max-width: 400px;
-                padding: 30px 20px;
-            }
-            .row-btns {
-                flex-direction: column;
-            }
-            .blog-container {
-                padding: 60px 5vw;
-            }
-            .blog-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 20px;
-            }
-            .blog-header h1 {
-                font-size: 2rem;
-            }
-            .blog-grid {
-                /* Changed to 1 fraction per column to prevent overflow on thin screens */
-                grid-template-columns: 1fr; 
-                gap: 25px;
-            }
-            .post-img-wrapper {
-                height: 180px;
-            }
+        .ai-summary-box {
+            margin-top: 50px; padding: 25px; background: #0a0a0a; 
+            border-left: 3px solid var(--accent); display: none;
         }
     </style>
 </head>
@@ -190,85 +167,154 @@
 
     <div id="book-intro">
         <div class="book">
-            <div class="book-cover">
-                <h2>ARCHIVES</h2>
-            </div>
-            <div class="book-page"></div>
+            <div class="book-cover"><h2>ARCHIVES</h2></div>
         </div>
     </div>
 
     <div id="gatekeeper">
-        <h2 style="font-family:'Syncopate'; letter-spacing:5px;">ACCESS_POINT</h2>
-        <p style="margin-top:10px; color:#555;">CHOOSE YOUR DESTINATION</p>
+        <h2 style="font-family:'Syncopate';">ACCESS_POINT</h2>
         <div class="btn-group">
             <div class="row-btns">
                 <button class="gate-btn" onclick="showBlogs()">SEE_BLOGS</button>
                 <button class="gate-btn" onclick="location.href='login_creator.html'">CREATE_BLOG</button>
             </div>
-            <button class="gate-btn home-btn" onclick="location.href='index.html'">RETURN_HOME</button>
         </div>
     </div>
 
     <main class="blog-container" id="main-blog">
         <div class="blog-header">
             <h1>THE_BLOG</h1>
-            <a href="index.html" class="exit-blog">[ EXIT_ARCHIVES ]</a>
+            <a href="index.html" style="color:var(--accent); text-decoration:none; font-family:'Syncopate'; font-size:0.7rem;">[ EXIT ]</a>
         </div>
-        <div class="blog-grid" id="blog-grid">
-            <!-- Populated by blog_data.js -->
+
+        <div class="ai-panel">
+            <div class="ai-header">
+                <span class="ai-title">ARCHIVE_INTELLIGENCE // V1.0</span>
+                <button class="ai-btn" id="ai-main-btn" onclick="analyzeArchive()">✨ ANALYZE_COLLECTION</button>
+            </div>
+            <div class="ai-content" id="ai-main-output">Ready for archival synthesis...</div>
         </div>
+
+        <div class="blog-grid" id="blog-grid"></div>
     </main>
 
+    <!-- Unified Post Viewer -->
+    <div id="post-viewer">
+        <div class="viewer-close" onclick="closeViewer()">[ CLOSE_TERMINAL ]</div>
+        <div id="view-target" class="view-content"></div>
+        
+        <div id="post-ai-summary" class="ai-summary-box">
+            <div class="ai-title" style="margin-bottom:10px;">✨ SYSTEM_SUMMARY</div>
+            <div id="post-ai-text" class="ai-content"></div>
+        </div>
+        
+        <div style="margin-top:40px;">
+            <button class="ai-btn" id="post-ai-btn" onclick="summarizeCurrentPost()">✨ GENERATE_AI_SUMMARY</button>
+        </div>
+    </div>
+
     <script>
+        const apiKey = ""; 
+        let currentPost = null;
+
         setTimeout(() => {
             document.getElementById('gatekeeper').style.display = 'block';
-        }, 2000);
-
-        function trackInteraction(type, detail) {
-            let stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
-            if (type === 'view') stats.views++;
-            if (type === 'click') {
-                stats.clicks.push({ title: detail, time: new Date().toISOString() });
-            }
-            localStorage.setItem('apex_blog_stats', JSON.stringify(stats));
-        }
+        }, 1500);
 
         function showBlogs() {
-            document.getElementById('book-intro').style.opacity = '0';
+            document.getElementById('book-intro').style.display = 'none';
             document.getElementById('gatekeeper').style.display = 'none';
             document.getElementById('main-blog').style.opacity = '1';
-            setTimeout(() => document.getElementById('book-intro').remove(), 1000);
-            loadPosts();
-            trackInteraction('view');
+            loadGrid();
         }
 
-        function openPost(postId, postTitle) {
-            trackInteraction('click', postTitle);
-            // Pass the ID to the viewer page via URL parameter
-            window.location.href = `blog_viewer.html?id=${postId}`;
-        }
-
-        function loadPosts() {
+        function loadGrid() {
             const grid = document.getElementById('blog-grid');
-            if(window.blogPosts && window.blogPosts.length > 0) {
-                grid.innerHTML = '';
-                window.blogPosts.forEach(post => {
-                    grid.innerHTML += `
-                        <div class="post-card" onclick="openPost('${post.id}', '${post.title.replace(/'/g, "\\'")}')">
-                            <div class="post-img-wrapper">
-                                ${post.image ? `<img src="${post.image}" alt="${post.title}">` : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#222; font-size:0.6rem;">NO_IMAGE_DATA</div>`}
-                            </div>
-                            <div class="post-meta">
-                                <span>${post.date}</span>
-                                <h3>${post.title}</h3>
-                                <p>${post.excerpt}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                grid.innerHTML = "<p style='color:#333; grid-column: 1/-1;'>NO_DATA_STREAM_FOUND. INITIALIZE_DATA_IN_CREATOR_WORKSPACE.</p>";
+            if (!window.blogPosts || window.blogPosts.length === 0) {
+                grid.innerHTML = "<p>NO DATA FOUND.</p>";
+                return;
             }
+            grid.innerHTML = window.blogPosts.map(post => `
+                <div class="post-card" onclick="viewPost('${post.id}')">
+                    <div class="post-img-wrapper">
+                        <img src="${post.image || ''}" onerror="this.style.display='none'">
+                    </div>
+                    <div class="post-meta">
+                        <h3>${post.title}</h3>
+                        <p>${post.excerpt}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewPost(id) {
+            currentPost = window.blogPosts.find(p => p.id == id);
+            if (!currentPost) return;
+
+            const target = document.getElementById('view-target');
+            document.getElementById('post-ai-summary').style.display = 'none';
+            
+            target.innerHTML = `
+                <span class="view-date">${currentPost.date} // ID_${currentPost.id}</span>
+                <h1>${currentPost.title}</h1>
+                <div class="view-body">
+                    ${currentPost.image ? `<img src="${currentPost.image}">` : ''}
+                    ${currentPost.content}
+                </div>
+            `;
+            
+            document.getElementById('post-viewer').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeViewer() {
+            document.getElementById('post-viewer').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            currentPost = null;
+        }
+
+        async function callGemini(prompt, systemPrompt) {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] }
+                    })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "NO_RESPONSE";
+            } catch (e) { return "CONNECTION_ERROR"; }
+        }
+
+        async function analyzeArchive() {
+            const output = document.getElementById('ai-main-output');
+            const btn = document.getElementById('ai-main-btn');
+            btn.disabled = true;
+            output.innerText = "Synthesizing metadata...";
+            
+            const context = window.blogPosts.map(p => p.title).join(', ');
+            const res = await callGemini(`Archive titles: ${context}. Give a 1-sentence futuristic overview of these archives.`, "You are APEX AI.");
+            
+            output.innerText = res;
+            btn.disabled = false;
+        }
+
+        async function summarizeCurrentPost() {
+            if (!currentPost) return;
+            const output = document.getElementById('post-ai-text');
+            const box = document.getElementById('post-ai-summary');
+            const btn = document.getElementById('post-ai-btn');
+            
+            box.style.display = 'block';
+            btn.disabled = true;
+            output.innerText = "Processing neural links...";
+            
+            const res = await callGemini(`Content: ${currentPost.content}. Summarize this in 3 bullet points.`, "You are a technical archival assistant.");
+            
+            output.innerText = res;
+            btn.disabled = false;
         }
     </script>
 </body>
