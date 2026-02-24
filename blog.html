@@ -153,6 +153,37 @@
         .post-meta span { font-size: 0.7rem; color: #444; letter-spacing: 2px; }
         .post-meta h3 { color: var(--accent); margin: 10px 0 15px; font-family: 'Syncopate'; font-size: 1.1rem; }
         .post-meta p { color: #888; font-size: 0.85rem; line-height: 1.6; }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            #gatekeeper {
+                width: 90%;
+                max-width: 400px;
+                padding: 30px 20px;
+            }
+            .row-btns {
+                flex-direction: column;
+            }
+            .blog-container {
+                padding: 60px 5vw;
+            }
+            .blog-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+            .blog-header h1 {
+                font-size: 2rem;
+            }
+            .blog-grid {
+                /* Changed to 1 fraction per column to prevent overflow on thin screens */
+                grid-template-columns: 1fr; 
+                gap: 25px;
+            }
+            .post-img-wrapper {
+                height: 180px;
+            }
+        }
     </style>
 </head>
 <body>
