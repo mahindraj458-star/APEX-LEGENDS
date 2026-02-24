@@ -38,7 +38,7 @@
         }
         .sticky-header.visible { transform: translateY(0); }
         .sticky-header h2 { font-family: 'Syncopate'; font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); }
-        .back-link { color: #555; text-decoration: none; font-family: 'Syncopate'; font-size: 0.6rem; transition: 0.3s; }
+        .back-link { color: #555; text-decoration: none; font-family: 'Syncopate'; font-size: 0.6rem; transition: 0.3s; cursor: pointer; }
         .back-link:hover { color: #fff; }
 
         /* --- HERO SECTION --- */
@@ -92,7 +92,16 @@
         }
         .cinematic-poster { width: 350px; height: 500px; object-fit: cover; border: 1px solid #1a1a1a; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
         .cinematic-info h3 { font-family: 'Syncopate'; font-size: 2rem; margin-bottom: 25px; color: var(--accent); }
-        .cinematic-info p { color: #555; line-height: 1.8; font-size: 1.1rem; }
+        .cinematic-info p#cinematic-main-desc { color: #888; line-height: 1.8; font-size: 1.1rem; white-space: pre-line; }
+
+        /* ERROR OVERLAY */
+        #error-overlay {
+            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+        #error-overlay h1 { font-family: 'Stalinist One'; color: var(--accent); font-size: 3rem; margin-bottom: 20px; }
+        #error-overlay p { font-family: 'Syncopate'; font-size: 0.8rem; letter-spacing: 2px; color: #555; }
 
         @media (max-width: 1024px) {
             .content-grid { grid-template-columns: 1fr; gap: 60px; }
@@ -104,9 +113,16 @@
 </head>
 <body>
 
+    <div id="error-overlay">
+        <h1>ACCESS_DENIED</h1>
+        <p>NO_VALID_CAR_IDENTIFIER_FOUND. RETURN_TO_SHOWROOM.</p>
+        <br>
+        <div onclick="window.history.back()" class="back-link" style="color:var(--accent)">[ REBOOT_SEQUENCE ]</div>
+    </div>
+
     <!-- STICKY HEADER -->
     <header class="sticky-header" id="navbar">
-        <a href="Showroom.html" class="back-link">[ SHOWROOM_INDEX ]</a>
+        <div onclick="window.history.back()" class="back-link">[ SHOWROOM_INDEX ]</div>
         <h2 id="sticky-name">---</h2>
         <div style="width: 100px;"></div> 
     </header>
@@ -162,48 +178,57 @@
             <img id="media-img" class="cinematic-poster" src="" alt="Media Poster">
             <div class="cinematic-info">
                 <h3 id="media-title"></h3>
-                <p>This unit has achieved legendary status not just on the road, but within the global media landscape, becoming an inseparable icon of its respective series and automotive culture at large.</p>
+                <p id="cinematic-main-desc">Loading legacy record...</p>
             </div>
         </div>
     </section>
 
     <footer style="padding: 100px 10vw; border-top: 1px solid #111; text-align: center;">
-        <a href="Showroom.html" class="back-link" style="font-size: 0.8rem; letter-spacing: 4px;">[ RETURN_TO_GALLERY ]</a>
+        <div onclick="window.history.back()" class="back-link" style="font-size: 0.8rem; letter-spacing: 4px;">[ RETURN_TO_GALLERY ]</div>
     </footer>
 
     <script>
-        const carId = localStorage.getItem('selected_car_id');
+        // Use a safer check for localStorage and global variables
+        const carId = typeof localStorage !== 'undefined' ? localStorage.getItem('selected_car_id') : null;
+        // Assuming carDatabase is defined in dat.js as a global variable
         const db = window.carDatabase || [];
         const car = db.find(c => c.id === carId);
 
         if (!car) {
-            window.location.href = 'Showroom.html';
+            document.getElementById('error-overlay').style.display = 'flex';
         } else {
             initViewer();
         }
 
         function initViewer() {
             // Populate Hero
-            document.getElementById('hero-node').style.backgroundImage = `url(${car.images.desktop})`;
+            if (car.images && car.images.desktop) {
+                document.getElementById('hero-node').style.backgroundImage = `url(${car.images.desktop})`;
+            }
             document.getElementById('hero-name').innerText = car.name;
             document.getElementById('sticky-name').innerText = car.name;
 
-            // Narrative & Origin (Mapping from your dat.js structure)
-            // Note: Mapping car.legacy.story -> Narrative, etc.
-            document.getElementById('narrative-text').innerText = car.legacy.story;
-            document.getElementById('origin-text').innerText = car.origin;
-            document.getElementById('special-reason').innerText = car.legacy.specialReason;
-            document.getElementById('status-text').innerText = car.marketStatus;
+            // Narrative & Origin
+            document.getElementById('narrative-text').innerText = car.legacy.story || "NO_DATA_FOUND";
+            document.getElementById('origin-text').innerText = car.origin || "UNKNOWN";
+            document.getElementById('special-reason').innerText = car.legacy.specialReason || "N/A";
+            document.getElementById('status-text').innerText = car.marketStatus || "UNKNOWN";
 
             // Specs
-            document.getElementById('spec-engine').innerText = car.specs.engine.split(' ')[0];
-            document.getElementById('spec-hp').innerText = car.specs.hp;
-            document.getElementById('spec-speed').innerText = car.specs.topSpeed;
-            document.getElementById('spec-count').innerText = car.specs.production;
+            if (car.specs) {
+                document.getElementById('spec-engine').innerText = (car.specs.engine || "-").split(' ')[0];
+                document.getElementById('spec-hp').innerText = car.specs.hp || "-";
+                document.getElementById('spec-speed').innerText = car.specs.topSpeed || "-";
+                document.getElementById('spec-count').innerText = car.specs.production || "-";
+            }
 
-            // Media
-            document.getElementById('media-title').innerText = car.legacy.mediaList;
-            document.getElementById('media-img').src = car.legacy.mediaImage;
+            // Media & Cinematic Description (FROM dat.js)
+            document.getElementById('media-title').innerText = car.legacy.mediaList || "INCOGNITO_ASSET";
+            document.getElementById('media-img').src = car.legacy.mediaImage || "";
+            
+            // Map the actual description from dat.js legacy.cinematicDescription
+            const cinematicDesc = car.legacy.cinematicDescription || "No detailed media record exists for this unit in the current archive.";
+            document.getElementById('cinematic-main-desc').innerText = cinematicDesc;
 
             // 3D Model
             const container = document.getElementById('viewer-container');
