@@ -74,287 +74,549 @@
             z-index: 5000;
             display: none;
             flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
         #ai-panel.active { display: flex; }
         .ai-header { padding: 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .ai-header span { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--alert); letter-spacing: 2px; }
-        .ai-chat-area { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.9rem; color: #ccc; }
+        .ai-chat-area { flex: 1; overflow-y: auto; padding: 15px; font-size: 0.9rem; color: #ccc; line-height: 1.5; }
         .ai-input-area { padding: 15px; border-top: 1px solid #222; display: flex; gap: 10px; }
-        .ai-input-area input { flex: 1; background: transparent; border: 1px solid #333; color: #fff; padding: 8px; }
+        .ai-input-area input { 
+            flex: 1; background: transparent; border: 1px solid #333; color: #fff; 
+            padding: 8px; font-family: 'Rajdhani'; outline: none;
+        }
         .ai-input-area button { background: var(--alert); border: none; color: #fff; padding: 0 15px; cursor: pointer; font-size: 0.7rem; font-family: 'Syncopate'; }
 
-        /* --- HORIZONTAL BILLBOARD SYSTEM --- */
-        .billboard-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
+        /* --- HONKPISTON BRANDING --- */
+        .hp-powered-badge {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 5000;
+            text-align: right;
+            pointer-events: none;
+            opacity: 0;
+            animation: fadeInHP 1s ease 5s forwards;
+        }
+
+        .hp-text {
+            font-family: 'Stalinist One', cursive;
+            font-size: 0.8rem;
+            color: var(--hp-red);
+            display: block;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            animation: pistonVibrate 0.1s infinite;
+        }
+
+        .hp-subtext {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.5rem;
+            color: #fff;
+            letter-spacing: 4px;
+            opacity: 0.7;
+        }
+
+        @keyframes pistonVibrate {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(1px, -1px); }
+            50% { transform: translate(-1px, 1px); }
+            75% { transform: translate(1px, 1px); }
+            100% { transform: translate(0, 0); }
+        }
+
+        @keyframes fadeInHP {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- INTRO --- */
+        #intro-sequence {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background: #000;
-        }
-
-        #archive-list {
+            z-index: 9999;
             display: flex;
-            width: 100%;
-            height: 100%;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: none; /* Firefox */
-            scroll-behavior: smooth;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
         }
-        #archive-list::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
-        .archive-item {
-            flex: 0 0 100vw;
-            width: 100vw;
+        #speed-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .intro-title-wrapper { position: relative; z-index: 2; text-align: center; }
+        .intro-title {
+            font-size: 5vw;
+            letter-spacing: 2vw;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            font-family: 'Syncopate', sans-serif;
+            transition: transform 0.5s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.5s ease;
+        }
+        .hp-strike {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            font-family: 'Stalinist One', cursive;
+            color: var(--hp-red);
+            font-size: 4vw;
+            white-space: nowrap;
+            letter-spacing: 1vw;
+            opacity: 0;
+            text-shadow: 0 0 50px rgba(255,0,0,0.8);
+        }
+        .phase-2 .intro-title { transform: scale(1.5); opacity: 0; }
+        .phase-2 .hp-strike { animation: hpStrikeIn 0.4s forwards cubic-bezier(0.1, 0.9, 0.2, 1.2); }
+
+        @keyframes hpStrikeIn {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(3); filter: blur(20px); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+        }
+
+        /* --- HERO --- */
+        .hero {
             height: 100vh;
-            scroll-snap-align: start;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            padding: 0 10vw;
-            gap: 5vw;
         }
 
-        .archive-img-box {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
-        .archive-img-box::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, #000 0%, rgba(0,0,0,0.4) 50%, #000 100%);
+        .big-apex-logo {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(5rem, 25vw, 22rem);
+            letter-spacing: -0.05em;
+            color: var(--text-main);
+            line-height: 0.8;
             z-index: 2;
+            text-align: center;
+            animation: heroEntrance 1.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .archive-img-box img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            filter: grayscale(100%) brightness(0.3);
-            transition: 1.5s ease;
-        }
-        .archive-item:hover .archive-img-box img { filter: grayscale(0%) brightness(0.5); }
+        .big-apex-logo span { color: var(--alert); text-shadow: 0 0 30px rgba(255, 17, 17, 0.6); }
 
-        .archive-info {
-            position: relative;
-            z-index: 10;
-            max-width: 600px;
+        @keyframes heroEntrance {
+            from { opacity: 0; transform: scale(1.1) translateY(50px); filter: blur(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
-        .archive-info h2 { font-size: clamp(3rem, 8vw, 6rem); line-height: 0.9; margin-bottom: 20px; }
-        .archive-info .year-label { color: var(--alert); letter-spacing: 5px; font-weight: 700; display: block; margin-bottom: 10px; }
-        .archive-info p { font-size: 1.2rem; color: #bbb; margin-bottom: 40px; line-height: 1.5; }
 
-        /* --- BILLBOARD NAVIGATION --- */
-        .billboard-progress-container {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 2px;
-            background: rgba(255,255,255,0.1);
-            z-index: 20;
+        /* --- MISSION --- */
+        .site-desc-section {
+            padding: 100px 10vw 40px;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
         }
-        #billboard-progress-bar {
-            width: 0%;
-            height: 100%;
-            background: var(--alert);
+        .site-desc-section h3 { color: var(--alert); font-size: 0.8rem; letter-spacing: 5px; margin-bottom: 20px; }
+        .site-desc-section p { font-size: 1.5rem; line-height: 1.6; color: #888; font-weight: 300; }
+
+        .mission-cta { text-align: center; padding-bottom: 100px; }
+        .mission-cta a {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--alert);
+            font-family: 'Syncopate', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            border: 1px solid rgba(255, 17, 17, 0.3);
+            padding: 15px 40px;
             transition: 0.3s ease;
         }
+        .mission-cta a:hover { color: #fff; background: var(--alert); box-shadow: 0 0 30px rgba(255, 17, 17, 0.4); transform: scale(1.05); }
 
-        .scroll-hint {
-            position: absolute;
-            bottom: 80px;
-            right: 10vw;
-            font-family: 'Syncopate';
-            font-size: 0.6rem;
-            color: #444;
-            letter-spacing: 5px;
-            z-index: 20;
+        /* --- TICKER --- */
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background: #000;
+            border-top: 1px solid #111;
+            border-bottom: 1px solid #111;
+            padding: 25px 0;
+            white-space: nowrap;
+        }
+        .ticker { display: inline-flex; animation: marquee 60s linear infinite; }
+        .ticker-item {
             display: flex;
             align-items: center;
-            gap: 20px;
+            padding: 0 60px;
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.2rem;
+            color: #fff;
+            text-transform: uppercase;
+        }
+        .ticker-item span { color: var(--alert); margin-right: 20px; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; font-weight: 700; }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
-        /* --- REUSEABLE COMPONENTS --- */
-        .action-group { display: flex; gap: 15px; }
-        .view-btn, .ai-predict-btn {
-            background: none; border: 1px solid #444; color: #fff;
-            padding: 15px 30px; font-family: 'Syncopate'; font-size: 0.65rem;
-            cursor: pointer; transition: 0.3s;
+        /* --- LIST / BILLBOARD --- */
+        #archive-list { padding: 100px 5vw; display: flex; flex-direction: column; gap: 150px; }
+        .archive-item {
+            display: flex;
+            align-items: center;
+            gap: 5vw;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: 0.8s cubic-bezier(0.2, 1, 0.3, 1) forwards;
         }
-        .ai-predict-btn { border-color: var(--alert); color: var(--alert); }
+        .archive-item.visible { opacity: 1; transform: translateY(0); }
+        .archive-img-box { flex: 1.2; height: 50vh; overflow: hidden; cursor: pointer; position: relative; }
+        .archive-img-box img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.4); transition: 0.8s ease; }
+        .archive-item:hover .archive-img-box img { filter: grayscale(0%) brightness(1); }
+        
+        .archive-info { flex: 1; }
+        .archive-info .year-label { color: var(--alert); letter-spacing: 4px; font-size: 0.9rem; font-weight: 700; }
+        .archive-info h2 { font-size: 3.5rem; margin: 10px 0; }
+        .archive-info p { color: #666; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; transition: 0.3s; }
+        .ai-generated-tag { font-size: 0.6rem; color: #444; margin-top: 10px; display: block; text-transform: uppercase; letter-spacing: 2px; }
+
+        .action-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .view-btn { background: none; border: 1px solid #333; color: #fff; padding: 12px 30px; font-family: 'Syncopate'; font-size: 0.7rem; cursor: pointer; transition: 0.3s; }
+        .view-btn:hover { background: #fff; color: #000; }
+        .ai-predict-btn { background: rgba(255, 17, 17, 0.1); border: 1px solid var(--alert); color: var(--alert); padding: 12px 30px; font-family: 'Syncopate'; font-size: 0.6rem; cursor: pointer; transition: 0.3s; }
         .ai-predict-btn:hover { background: var(--alert); color: #fff; }
 
-        /* --- INTRO / HERO / OTHER --- */
-        #intro-sequence { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: 0.8s; }
-        .hero { height: 100vh; display: flex; align-items: center; justify-content: center; background: #000; }
-        .big-apex-logo { font-size: clamp(5rem, 20vw, 15rem); color: #fff; }
-        .big-apex-logo span { color: var(--alert); }
-
-        #sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5,5,5,0.98); z-index: 1000; transition: 0.5s; padding: 100px 40px; border-right: 1px solid #222; }
+        /* --- SIDEBAR --- */
+        #menu-toggle { position: fixed; top: 35px; left: 35px; z-index: 1001; cursor: pointer; width: 25px; height: 15px; display: flex; flex-direction: column; justify-content: space-between; }
+        #menu-toggle span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.3s; }
+        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: rgba(5,5,5,0.98); backdrop-filter: blur(20px); z-index: 1000; transition: 0.5s; padding: 100px 40px; }
         #sidebar.active { left: 0; }
-        #sidebar a { color: #fff; text-decoration: none; display: block; margin-bottom: 25px; font-family: 'Syncopate'; font-size: 0.8rem; }
-        #menu-toggle { position: fixed; top: 40px; left: 40px; z-index: 1001; cursor: pointer; }
+        #sidebar a { 
+            color: #fff; text-decoration: none; display: block; margin-bottom: 30px; font-size: 1.1rem; 
+            letter-spacing: 2px; position: relative; font-family: 'Syncopate', sans-serif; width: fit-content;
+        }
+        #sidebar a::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 0%; height: 2px;
+            background: var(--alert); transition: width 0.4s cubic-bezier(0.8, 0, 0.2, 1); box-shadow: 0 0 10px var(--alert);
+        }
+        #sidebar a:hover::after { width: 100%; }
 
-        #ai-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; }
-        .modal-content { background: #0a0a0a; border: 1px solid #333; padding: 50px; max-width: 600px; width: 90%; position: relative; }
-        .modal-close { position: absolute; top: 20px; right: 20px; color: #555; cursor: pointer; font-family: 'Syncopate'; }
+        /* --- MODAL --- */
+        #ai-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-content { background: #080808; border: 1px solid #222; max-width: 600px; width: 100%; padding: 40px; position: relative; }
+        .modal-close { position: absolute; top: 20px; right: 20px; color: #555; cursor: pointer; font-family: 'Syncopate'; font-size: 0.7rem; }
+        .modal-body { color: #ccc; line-height: 1.6; font-size: 1.1rem; }
+        .modal-title { font-family: 'Syncopate'; color: var(--alert); margin-bottom: 20px; font-size: 1.2rem; }
 
+        /* --- SYNTHESIZER TOOLBAR --- */
+        .synth-box { margin-top: 50px; border-top: 1px solid #222; padding-top: 30px; }
+        .synth-box h4 { font-size: 0.6rem; color: var(--alert); letter-spacing: 3px; margin-bottom: 15px; }
+        .synth-input { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 10px; font-family: 'Rajdhani'; font-size: 0.8rem; margin-bottom: 10px; }
+        .synth-btn { width: 100%; background: transparent; border: 1px solid #444; color: #888; padding: 10px; font-family: 'Syncopate'; font-size: 0.5rem; cursor: pointer; transition: 0.3s; }
+        .synth-btn:hover { border-color: var(--alert); color: var(--alert); }
+
+        footer { padding: 100px 5vw 50px; text-align: center; font-size: 0.6rem; color: #333; letter-spacing: 5px; }
+
+        @media (max-width: 1024px) {
+            .archive-item { flex-direction: column; }
+            .archive-img-box { width: 100%; height: 35vh; }
+            .archive-info h2 { font-size: 2.5rem; }
+        }
     </style>
 </head>
 <body>
 
-    <button id="ai-analyst-trigger" onclick="toggleAI()">✨ ARCHIVE_ANALYST</button>
+    <button id="ai-analyst-trigger" onclick="toggleAI()">
+        ✨ ARCHIVE_ANALYST.EXE
+    </button>
+
     <div id="ai-panel">
-        <div class="ai-header"><span>// AI_TERMINAL</span><button onclick="toggleAI()">[X]</button></div>
-        <div class="ai-chat-area" id="ai-chat">System Ready. Query car specs or engineering history.</div>
+        <div class="ai-header">
+            <span>// ARCHIVE_COGNITION</span>
+            <button onclick="toggleAI()" style="background:none; border:none; color:#555; cursor:pointer;">[X]</button>
+        </div>
+        <div class="ai-chat-area" id="ai-chat">
+            System Online. I am the APEX Archive Intelligence. Ask me which car suits your driving style, or inquire about legacy mechanics.
+        </div>
         <div class="ai-input-area">
-            <input type="text" id="ai-input" placeholder="...">
-            <button onclick="sendAIQuery()">SCAN</button>
+            <input type="text" id="ai-input" placeholder="Query the archive..." onkeydown="if(event.key==='Enter') sendAIQuery()">
+            <button onclick="sendAIQuery()">✨ SCAN</button>
         </div>
     </div>
 
     <div id="ai-modal">
         <div class="modal-content">
-            <div class="modal-close" onclick="closeModal()">[X] CLOSE</div>
-            <div id="modal-title" style="color:var(--alert); font-family:'Syncopate'; margin-bottom:20px;">REPORT</div>
-            <div id="modal-body" style="color:#ccc; line-height:1.6;">...</div>
+            <div class="modal-close" onclick="closeModal()">[ CLOSE_TERMINAL ]</div>
+            <div class="modal-title" id="modal-title">ARCHIVE_REPORT</div>
+            <div class="modal-body" id="modal-body">Processing...</div>
         </div>
     </div>
 
-    <div id="intro-sequence">
-        <h1 class="sync-font" style="letter-spacing:10px;">APEX</h1>
+    <div class="hp-powered-badge">
+        <span class="hp-subtext">POWERED BY</span>
+        <span class="hp-text">HONKPISTON</span>
     </div>
 
-    <div id="menu-toggle" onclick="toggleMenu()" style="color:#fff; font-family:'Syncopate'; font-size:0.7rem; letter-spacing:2px;">[ MENU ]</div>
+    <div id="intro-sequence">
+        <canvas id="speed-canvas"></canvas>
+        <div class="intro-title-wrapper" id="intro-title-node">
+            <h1 class="intro-title">APEX</h1>
+            <h1 class="hp-strike">HONKPISTON</h1>
+        </div>
+    </div>
+
+    <div id="menu-toggle" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+
     <nav id="sidebar">
-        <a href="#">THE_COLLECTION</a>
-        <a href="#">PERFORMANCE_LAB</a>
-        <a href="#">HISTORY_LOG</a>
-        <div style="margin-top:50px; border-top:1px solid #222; padding-top:30px;">
-            <p style="font-size:0.5rem; color:var(--alert); font-family:'Syncopate';">UNIT_SYNTHESIZER</p>
-            <input type="text" id="synth-query" placeholder="V12 Concept..." style="width:100%; background:#111; border:1px solid #333; color:#fff; padding:10px; margin:10px 0;">
-            <button onclick="synthesizeUnit()" style="width:100%; background:none; border:1px solid #444; color:#888; padding:10px; font-family:'Syncopate'; font-size:0.5rem; cursor:pointer;">GENERATE</button>
+        <a href="Showroom.html">SHOWROOM</a>
+        <a href="blog.html">THE BLOG</a>
+        <a href="admin.html">TERMINAL</a>
+        
+        <div class="synth-box">
+            <h4 class="sync-font">✨ UNIT_SYNTHESIZER</h4>
+            <input type="text" id="synth-query" class="synth-input" placeholder="e.g. V12 track monster...">
+            <button class="synth-btn" onclick="synthesizeUnit()">GENERATE_CONCEPT</button>
         </div>
     </nav>
 
     <section class="hero">
-        <h1 class="big-apex-logo sync-font">AP<span>EX</span></h1>
+        <h1 class="big-apex-logo">AP<span>EX</span></h1>
     </section>
 
-    <!-- NEW HORIZONTAL BILLBOARD -->
-    <div class="billboard-container">
-        <div id="archive-list">
-            <!-- Dynamic Content -->
-        </div>
-        
-        <div class="billboard-progress-container">
-            <div id="billboard-progress-bar"></div>
-        </div>
+    <section class="site-desc-section">
+        <h3>// THE_MISSION</h3>
+        <p>APEX is a digital sanctuary for high-performance engineering. We document the history, mechanics, and cultural impact of the world's most legendary automotive units.</p>
+    </section>
 
-        <div class="scroll-hint">
-            <span>SCROLL_TO_EXPLORE</span>
-            <div style="width:40px; height:1px; background:#444;"></div>
-        </div>
+    <div class="mission-cta">
+        <a href="Showroom.html">ENTER_SHOWROOM</a>
     </div>
 
-    <footer style="padding:50px; text-align:center; font-size:0.5rem; letter-spacing:5px; color:#222;">APEX ARCHIVES // EST 2024</footer>
+    <!-- The Scroller should get every car details -->
+    <section class="ticker-wrap">
+        <div class="ticker" id="carTicker"></div>
+    </section>
+
+    <!-- The Billboard Section (Every car should be here with details) -->
+    <section id="archive-list"></section>
+
+    <footer>© 2024 APEX DIGITAL ARCHIVE // ALL RIGHTS RESERVED</footer>
 
     <script>
-        const apiKey = "";
-        
-        // UI Logic
-        setTimeout(() => { document.getElementById('intro-sequence').style.opacity = '0'; setTimeout(()=>document.getElementById('intro-sequence').remove(), 800); }, 1500);
+        // Intro Animation Sequence
+        const canvas = document.getElementById('speed-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
+        const resize = () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; };
+        window.addEventListener('resize', resize); resize();
+        class Particle {
+            constructor() { this.reset(); }
+            reset() { this.x = width/2 + (Math.random()-0.5)*50; this.y = height/2 + (Math.random()-0.5)*50; this.z = Math.random()*1000; this.s = Math.random()*20+5; }
+            draw() {
+                this.z -= this.s; if(this.z <= 0) this.reset();
+                const f = 400/this.z, px = (this.x-width/2)*f+width/2, py = (this.y-height/2)*f+height/2;
+                ctx.fillStyle = `rgba(255,255,255,${f/2})`; ctx.fillRect(px, py, f, f);
+            }
+        }
+        for(let i=0; i<150; i++) particles.push(new Particle());
+        const anim = () => { ctx.fillStyle='black'; ctx.fillRect(0,0,width,height); particles.forEach(p=>p.draw()); if(document.getElementById('intro-sequence')) requestAnimationFrame(anim); };
+        anim();
+        setTimeout(() => { 
+            document.getElementById('intro-title-node').classList.add('phase-2');
+            setTimeout(() => { const intro = document.getElementById('intro-sequence'); if(intro) { intro.style.opacity='0'; setTimeout(()=>intro.remove(), 800); } }, 1800);
+        }, 2100);
+
         const toggleMenu = () => document.getElementById('sidebar').classList.toggle('active');
+
+        // Gemini API Configuration
+        const apiKey = ""; 
+
         const toggleAI = () => document.getElementById('ai-panel').classList.toggle('active');
         const closeModal = () => document.getElementById('ai-modal').style.display = 'none';
 
-        async function fetchGemini(prompt, sys = "") {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: sys ? { parts: [{ text: sys }] } : undefined })
-            });
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text;
-        }
-
-        async function synthesizeUnit() {
-            const q = document.getElementById('synth-query').value;
-            const body = document.getElementById('modal-body');
-            document.getElementById('ai-modal').style.display = 'flex';
-            body.innerText = "Synthesizing concept...";
-            body.innerText = await fetchGemini(`Describe a high-end car concept based on: ${q}`, "You are a lead automotive designer.");
-        }
-
-        async function predictPerformance(carName) {
-            const body = document.getElementById('modal-body');
-            document.getElementById('ai-modal').style.display = 'flex';
-            body.innerText = "Simulating lap times...";
-            body.innerText = await fetchGemini(`Predict performance specs for ${carName} in a futuristic track setting.`, "Racing Engineer AI.");
-        }
-
-        // --- RENDER & SCROLL LOGIC ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const list = document.getElementById('archive-list');
-            const data = window.carDatabase || [];
-            
-            if(data.length > 0) {
-                list.innerHTML = data.map(car => `
-                    <div class="archive-item">
-                        <div class="archive-img-box">
-                            <img src="${car.images?.desktop || ''}" onerror="this.src='https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2000'">
-                        </div>
-                        <div class="archive-info">
-                            <span class="year-label">${car.year || '----'}</span>
-                            <h2 class="sync-font">${car.name}</h2>
-                            <p>${car.legacy?.description || 'Classified archival data.'}</p>
-                            <div class="action-group">
-                                <button class="view-btn" onclick="location.href='Showroom.html'">EXPLORE</button>
-                                <button class="ai-predict-btn" onclick="predictPerformance('${car.name}')">✨ PREDICT</button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Progress Bar & Auto-Scroll Logic
-                const progressBar = document.getElementById('billboard-progress-bar');
-                list.addEventListener('scroll', () => {
-                    const scrollP = (list.scrollLeft / (list.scrollWidth - list.clientWidth)) * 100;
-                    progressBar.style.width = scrollP + '%';
-                });
-
-                // Auto-slide interval
-                let autoSlide = setInterval(() => {
-                    if (list.scrollLeft + list.clientWidth >= list.scrollWidth - 10) {
-                        list.scrollTo({ left: 0, behavior: 'smooth' });
-                    } else {
-                        list.scrollBy({ left: window.innerWidth, behavior: 'smooth' });
-                    }
-                }, 8000);
-
-                // Stop auto-slide on manual interaction
-                list.addEventListener('mousedown', () => clearInterval(autoSlide));
-                list.addEventListener('wheel', () => clearInterval(autoSlide));
+        async function fetchGemini(prompt, systemInstruction = "") {
+            let retries = 5;
+            let delay = 1000;
+            while(retries > 0) {
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined
+                        })
+                    });
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (e) {
+                    retries--;
+                    if(retries === 0) throw e;
+                    await new Promise(r => setTimeout(r, delay));
+                    delay *= 2;
+                }
             }
-        });
+        }
 
         async function sendAIQuery() {
             const input = document.getElementById('ai-input');
             const chat = document.getElementById('ai-chat');
-            const q = input.value;
-            if(!q) return;
-            chat.innerHTML += `<div style="color:#fff; margin-top:10px;">> ${q}</div>`;
+            const query = input.value.trim();
+            if(!query) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.style.marginBottom = '10px';
+            userMsg.style.color = '#fff';
+            userMsg.innerHTML = `> ${query}`;
+            chat.appendChild(userMsg);
             input.value = "";
-            const res = await fetchGemini(q, "APEX Archive Assistant. Technical, cold tone.");
-            chat.innerHTML += `<div style="color:var(--alert); margin-top:5px; border-left:1px solid red; padding-left:10px;">${res}</div>`;
             chat.scrollTop = chat.scrollHeight;
+
+            const loadingMsg = document.createElement('div');
+            loadingMsg.style.color = 'var(--alert)';
+            loadingMsg.innerText = "Scanning Archive...";
+            chat.appendChild(loadingMsg);
+
+            try {
+                const carContext = (window.carDatabase || []).map(c => `${c.name} (${c.year})`).join(', ');
+                const sys = `You are the APEX AI. Access to: ${carContext}. Identify units based on user query. Tone: Cold, mechanical, technical. Max 50 words.`;
+                const aiResponse = await fetchGemini(query, sys);
+                
+                chat.removeChild(loadingMsg);
+                const msg = document.createElement('div');
+                msg.style.marginBottom = '20px';
+                msg.style.borderLeft = '2px solid var(--alert)';
+                msg.style.paddingLeft = '10px';
+                msg.innerText = aiResponse || "Neural link failure.";
+                chat.appendChild(msg);
+                chat.scrollTop = chat.scrollHeight;
+            } catch (err) {
+                loadingMsg.innerText = "Connection Interrupted.";
+            }
         }
+
+        async function predictPerformance(carId) {
+            const car = (window.carDatabase || []).find(c => c.id === carId);
+            if(!car) return;
+            const modal = document.getElementById('ai-modal');
+            const body = document.getElementById('modal-body');
+            modal.style.display = 'flex';
+            body.innerText = "Accessing performance matrix...";
+            try {
+                const prompt = `Analyze the performance potential of the ${car.name} (${car.year}). Stats: HP: ${car.stats?.hp}. Context: High speed track day. Technical simulation results only.`;
+                const result = await fetchGemini(prompt, "You are a racing engineer AI.");
+                body.innerText = result || "Data corrupted.";
+            } catch (e) { body.innerText = "Neural node unreachable."; }
+        }
+
+        async function expandLegacy(carId, elementId) {
+            const car = (window.carDatabase || []).find(c => c.id === carId);
+            const p = document.getElementById(elementId);
+            if(!car || !p) return;
+            p.innerText = "✨ GENERATING DEEP ARCHIVE LEGACY...";
+            try {
+                const prompt = `Write a compelling 3-sentence historical summary of the ${car.name}'s engineering legacy.`;
+                const result = await fetchGemini(prompt, "You are a prestigious automotive historian.");
+                p.innerText = result || "Archived.";
+            } catch (e) { p.innerText = "Legacy file encrypted."; }
+        }
+
+        // New Gemini Feature: Unit Synthesizer
+        async function synthesizeUnit() {
+            const query = document.getElementById('synth-query').value.trim();
+            if(!query) return;
+            const modal = document.getElementById('ai-modal');
+            const body = document.getElementById('modal-body');
+            const title = document.getElementById('modal-title');
+            
+            modal.style.display = 'flex';
+            title.innerText = "✨ UNIT_SYNTHESIS_REPORT";
+            body.innerHTML = "Synthesizing hypothetical components...<br>Compiling aerodynamic profile...";
+            
+            try {
+                const prompt = `Design a custom high-performance vehicle based on this request: "${query}". Include a Name, Engine Type, HP, and a 1-sentence description of its "Apex Trait". Use cold technical language.`;
+                const result = await fetchGemini(prompt, "You are a lead vehicle architect AI.");
+                body.innerHTML = result.replace(/\n/g, '<br>');
+            } catch (e) {
+                body.innerText = "Synthesis failed. Input parameters unstable.";
+            }
+        }
+
+        // New Gemini Feature: Vision Scan for Billboard
+        async function visionScan(carId) {
+            const car = (window.carDatabase || []).find(c => c.id === carId);
+            const modal = document.getElementById('ai-modal');
+            const body = document.getElementById('modal-body');
+            const title = document.getElementById('modal-title');
+            
+            modal.style.display = 'flex';
+            title.innerText = "✨ VISION_REBOOT_SCAN";
+            body.innerText = `Scanning ${car.name} chassis... projecting 2050 aesthetic...`;
+            
+            try {
+                const prompt = `Describe a futuristic, cyberpunk "reboot" design for the ${car.name}. Focus on materials like graphene and plasma lighting. Max 40 words.`;
+                const result = await fetchGemini(prompt, "You are a futuristic car designer.");
+                body.innerText = result || "Scan timed out.";
+            } catch (e) {
+                body.innerText = "Optic link failure.";
+            }
+        }
+
+        // --- UPDATED LOGIC: SCROLLER AND BILLBOARD ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const ticker = document.getElementById('carTicker');
+            const archiveList = document.getElementById('archive-list');
+            
+            // Ensure dat.js is loaded and database exists
+            const data = window.carDatabase || [];
+
+            if(data.length > 0) {
+                // Logic Update 1: Scroller gets every car details
+                const tickerContent = data.map(car => `
+                    <div class="ticker-item">
+                        <span>[ ${car.year || '----'} ]</span> ${car.name}
+                    </div>
+                `).join('');
+                // Duplicate for smooth loop
+                ticker.innerHTML = tickerContent + tickerContent + tickerContent;
+
+                // Logic Update 2: Billboard section gets every car with details
+                archiveList.innerHTML = ''; // Clear existing
+                data.forEach((car) => {
+                    const descId = `desc-${car.id}`;
+                    const item = document.createElement('div');
+                    item.className = 'archive-item';
+                    item.innerHTML = `
+                        <div class="archive-img-box" onclick="localStorage.setItem('selected_car_id', '${car.id}'); window.location.href='Showroom.html'">
+                            <img src="${car.images?.desktop || ''}" onerror="this.src='https://via.placeholder.com/800x450?text=UNIT_UNAVAILABLE'">
+                        </div>
+                        <div class="archive-info">
+                            <span class="year-label">YEAR: ${car.year || 'TBA'}</span>
+                            <h2 class="sync-font">${car.name}</h2>
+                            <p id="${descId}">${car.legacy?.description || 'Data classified.'}</p>
+                            <div class="action-group">
+                                <button class="view-btn" onclick="localStorage.setItem('selected_car_id', '${car.id}'); window.location.href='Showroom.html'">EXPLORE_UNIT</button>
+                                <button class="ai-predict-btn" onclick="predictPerformance('${car.id}')">✨ PERFORMANCE PREDICT</button>
+                                <button class="ai-predict-btn" style="background: rgba(255,255,255,0.05); border-color: #555; color: #fff;" onclick="visionScan('${car.id}')">✨ VISION SCAN</button>
+                                <button class="view-btn" style="border-color: #333; color: #555; font-size: 0.5rem" onclick="expandLegacy('${car.id}', '${descId}')">✨ LEGACY EXPAND</button>
+                            </div>
+                        </div>
+                    `;
+                    archiveList.appendChild(item);
+                });
+
+                // Re-init intersection observer for the new items
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.archive-item').forEach(el => observer.observe(el));
+            }
+        });
     </script>
 </body>
 </html>
