@@ -120,14 +120,12 @@
         <div onclick="window.history.back()" class="back-link" style="color:var(--accent)">[ REBOOT_SEQUENCE ]</div>
     </div>
 
-    <!-- STICKY HEADER -->
     <header class="sticky-header" id="navbar">
         <div onclick="window.history.back()" class="back-link">[ SHOWROOM_INDEX ]</div>
         <h2 id="sticky-name">---</h2>
         <div style="width: 100px;"></div> 
     </header>
 
-    <!-- HERO -->
     <div id="hero-node" class="hero">
         <div class="hero-title-box">
             <h1 id="hero-name">LOADING</h1>
@@ -135,7 +133,6 @@
         </div>
     </div>
 
-    <!-- NARRATIVE & ORIGIN -->
     <section>
         <span class="section-label">// ARCHIVE_NARRATIVE</span>
         <div class="content-grid">
@@ -163,15 +160,11 @@
         </div>
     </section>
 
-    <!-- 3D MODEL -->
     <section class="model-section">
         <div class="viewer-hint">USE MOUSE TO ROTATE // SCROLL TO ZOOM</div>
-        <div id="viewer-container" style="width:100%; height:100%;">
-            <!-- Model Loaded Here -->
-        </div>
+        <div id="viewer-container" style="width:100%; height:100%;"></div>
     </section>
 
-    <!-- CINEMATIC FEATURE -->
     <section id="cinematic-section">
         <span class="section-label">// CINEMATIC_LEGACY</span>
         <div class="cinematic-wrap">
@@ -188,9 +181,8 @@
     </footer>
 
     <script>
-        // Use a safer check for localStorage and global variables
+        // Data Fetching
         const carId = typeof localStorage !== 'undefined' ? localStorage.getItem('selected_car_id') : null;
-        // Assuming carDatabase is defined in dat.js as a global variable
         const db = window.carDatabase || [];
         const car = db.find(c => c.id === carId);
 
@@ -201,17 +193,17 @@
         }
 
         function initViewer() {
-            // Populate Hero
+            // Hero
             if (car.images && car.images.desktop) {
                 document.getElementById('hero-node').style.backgroundImage = `url(${car.images.desktop})`;
             }
             document.getElementById('hero-name').innerText = car.name;
             document.getElementById('sticky-name').innerText = car.name;
 
-            // Narrative & Origin
-            document.getElementById('narrative-text').innerText = car.legacy.story || "NO_DATA_FOUND";
+            // Core Narrative
+            document.getElementById('narrative-text').innerText = car.legacy?.story || "NO_DATA_FOUND";
             document.getElementById('origin-text').innerText = car.origin || "UNKNOWN";
-            document.getElementById('special-reason').innerText = car.legacy.specialReason || "N/A";
+            document.getElementById('special-reason').innerText = car.legacy?.specialReason || "N/A";
             document.getElementById('status-text').innerText = car.marketStatus || "UNKNOWN";
 
             // Specs
@@ -222,13 +214,21 @@
                 document.getElementById('spec-count').innerText = car.specs.production || "-";
             }
 
-            // Media & Cinematic Description (FROM dat.js)
-            document.getElementById('media-title').innerText = car.legacy.mediaList || "INCOGNITO_ASSET";
-            document.getElementById('media-img').src = car.legacy.mediaImage || "";
+            // Cinematic / Media Section
+            // Map specifically to the 'cinematicDescription' key from the JS file
+            const mediaTitle = car.legacy?.mediaList || "ARCHIVED_ASSET";
+            const mediaImg = car.legacy?.mediaImage || "";
+            const cinematicDesc = car.legacy?.cinematicDescription;
+
+            document.getElementById('media-title').innerText = mediaTitle;
+            document.getElementById('media-img').src = mediaImg;
             
-            // Map the actual description from dat.js legacy.cinematicDescription
-            const cinematicDesc = car.legacy.cinematicDescription || "No detailed media record exists for this unit in the current archive.";
-            document.getElementById('cinematic-main-desc').innerText = cinematicDesc;
+            // Priority check for cinematicDescription
+            if (cinematicDesc && cinematicDesc.length > 5) {
+                document.getElementById('cinematic-main-desc').innerText = cinematicDesc;
+            } else {
+                document.getElementById('cinematic-main-desc').innerText = "Data fragmentation detected. This unit represents a significant cultural milestone, though specific archival media descriptions are restricted or pending verification.";
+            }
 
             // 3D Model
             const container = document.getElementById('viewer-container');
@@ -246,7 +246,6 @@
             }
         }
 
-        // Scroll Handling for Sticky Nav
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
             if (window.scrollY > window.innerHeight - 100) {
