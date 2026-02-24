@@ -10,9 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- LOAD EXTERNAL BLOG DATA -->
-    <script src="blog_data.js" onerror="console.log('blog_data.js not initialized yet.')"></script>
-
     <style>
         /* --- CORE VARIABLES --- */
         :root {
@@ -26,11 +23,7 @@
             --sidebar-width: 320px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-dark);
@@ -45,10 +38,7 @@
             background-size: 30px 30px;
         }
 
-        h1, h2, h3, .sync-font {
-            font-family: 'Syncopate', sans-serif;
-            text-transform: uppercase;
-        }
+        h1, h2, h3, .sync-font { font-family: 'Syncopate', sans-serif; text-transform: uppercase; }
 
         /* --- SIDEBAR --- */
         #sidebar {
@@ -125,12 +115,6 @@
             letter-spacing: 1px;
         }
 
-        .export-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
         .export-btn {
             width: 100%;
             padding: 12px;
@@ -141,7 +125,6 @@
             font-size: 0.7rem;
             cursor: pointer;
             transition: 0.3s;
-            text-align: left;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -150,10 +133,7 @@
         .export-btn:hover {
             border-color: var(--neon-green);
             background: rgba(0, 255, 65, 0.15);
-            box-shadow: 0 0 15px rgba(0,255,65,0.1);
         }
-
-        .export-btn span { opacity: 0.5; font-size: 0.6rem; }
 
         .terminate-btn {
             width: 100%;
@@ -166,14 +146,7 @@
             font-size: 0.6rem;
             letter-spacing: 2px;
             cursor: pointer;
-            text-align: left;
             transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        .terminate-btn:hover {
-            background: rgba(255, 17, 17, 0.1);
-            color: #fff;
         }
 
         /* --- MAIN WORKSPACE --- */
@@ -181,7 +154,6 @@
             flex: 1;
             padding: 40px;
             overflow-y: auto;
-            position: relative;
         }
 
         .tab-content {
@@ -236,8 +208,6 @@
             color: #ccc;
         }
 
-        .data-table tr:hover td { background: rgba(0, 255, 65, 0.02); color: #fff; }
-
         .btn-delete {
             background: transparent;
             border: 1px solid var(--alert-red);
@@ -250,68 +220,29 @@
 
         .btn-delete:hover { background: var(--alert-red); color: #fff; }
 
-        /* --- FORM STYLES --- */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group.full-width { grid-column: 1 / -1; }
-
-        .form-group label {
-            display: block;
+        .btn-edit {
+            background: transparent;
+            border: 1px solid var(--neon-green);
             color: var(--neon-green);
-            font-size: 0.65rem;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
-            font-weight: 700;
-        }
-
-        .form-group input, .form-group textarea, .form-group select {
-            width: 100%;
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--neon-dim);
-            color: #fff;
-            padding: 14px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--neon-green); }
-
-        .form-section-header {
-            grid-column: 1 / -1;
-            color: #888;
-            font-family: 'Syncopate', sans-serif;
+            padding: 5px 15px;
             font-size: 0.7rem;
-            letter-spacing: 3px;
-            margin: 30px 0 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .form-section-header::after { content: ''; flex: 1; height: 1px; background: #222; }
-
-        .btn-submit {
-            grid-column: 1 / -1;
-            background: var(--neon-green);
-            color: #000;
-            border: none;
-            padding: 20px;
-            font-family: 'Syncopate', sans-serif;
-            font-size: 0.9rem;
-            letter-spacing: 4px;
             cursor: pointer;
             transition: 0.3s;
-            margin-top: 20px;
+            margin-right: 5px;
         }
 
-        .btn-submit:hover { box-shadow: 0 0 30px rgba(0,255,65,0.4); transform: translateY(-2px); }
+        .btn-edit:hover { background: var(--neon-green); color: #000; }
+
+        /* FORM STYLES (MATCHING ORIGINAL CREATOR) */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { display: block; color: var(--neon-green); font-size: 0.65rem; margin-bottom: 8px; letter-spacing: 1px; font-weight: 700; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; background: rgba(0,0,0,0.6); border: 1px solid var(--neon-dim); color: #fff; padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; outline: none; }
+        .form-section-header { grid-column: 1 / -1; color: #888; font-family: 'Syncopate', sans-serif; font-size: 0.7rem; letter-spacing: 3px; margin: 30px 0 10px 0; display: flex; align-items: center; gap: 15px; }
+        .form-section-header::after { content: ''; flex: 1; height: 1px; background: #222; }
+        .btn-submit { grid-column: 1 / -1; background: var(--neon-green); color: #000; border: none; padding: 20px; font-family: 'Syncopate', sans-serif; font-size: 0.9rem; letter-spacing: 4px; cursor: pointer; transition: 0.3s; margin-top: 20px; }
+        .btn-cancel { grid-column: 1 / -1; background: #222; color: #fff; border: none; padding: 10px; font-family: 'Syncopate', sans-serif; font-size: 0.7rem; cursor: pointer; margin-top: 5px; display: none; }
 
         #notification {
             position: fixed;
@@ -323,7 +254,7 @@
             font-family: 'Syncopate', sans-serif;
             font-size: 0.8rem;
             opacity: 0;
-            transition: 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+            transition: 0.5s;
             z-index: 9999;
         }
 
@@ -332,25 +263,21 @@
 </head>
 <body>
 
-    <!-- SIDEBAR NAVIGATION -->
     <nav id="sidebar">
         <div class="brand-header">
             <h1 class="sync-font">APEX</h1>
-            <p>OVERSEER_TERMINAL v5.2</p>
+            <p>OVERSEER_TERMINAL v6.0</p>
         </div>
 
         <button class="nav-btn active" onclick="switchTab('tab-bloggers')">[01] MANAGE_BLOGGERS</button>
-        <button class="nav-btn" onclick="switchTab('tab-blogs')">[02] CONTENT_CONTROL</button>
+        <button class="nav-btn" onclick="switchTab('tab-showroom-list')">[02] SHOWROOM_DATABASE</button>
         <button class="nav-btn" onclick="switchTab('tab-showroom')">[03] SHOWROOM_CREATOR</button>
 
         <div class="export-section">
-            <span class="export-label">// GLOBAL_EXPORT_CENTER</span>
+            <span class="export-label">// CORE_DAT_GENERATOR</span>
             <div class="export-grid">
-                <button class="export-btn" onclick="exportData('dat.js')">
-                    EXPORT_SHOWROOM <span>DAT.JS</span>
-                </button>
-                <button class="export-btn" onclick="exportData('blog_data.js')">
-                    EXPORT_CONTENT <span>BLOG_DATA.JS</span>
+                <button class="export-btn" onclick="exportDatJS()">
+                    GENERATE <span>DAT.JS</span>
                 </button>
             </div>
         </div>
@@ -358,10 +285,9 @@
         <button class="terminate-btn" onclick="terminateSession()">[!] TERMINATE_SESSION</button>
     </nav>
 
-    <!-- MAIN WORKSPACE -->
     <main id="workspace">
         
-        <!-- TAB 1: BLOGGERS (Sync with login_creator.html) -->
+        <!-- TAB 1: BLOGGERS -->
         <section id="tab-bloggers" class="tab-content active">
             <div class="section-title">
                 <span class="sync-font">REGISTERED_BLOGGERS</span>
@@ -369,44 +295,40 @@
             </div>
             <table class="data-table">
                 <thead>
-                    <tr>
-                        <th>ALIAS</th>
-                        <th>JOIN_DATE</th>
-                        <th>AUTH_ID</th>
-                        <th>ACTION</th>
-                    </tr>
+                    <tr><th>ALIAS</th><th>JOIN_DATE</th><th>AUTH_ID</th><th>ACTION</th></tr>
                 </thead>
                 <tbody id="blogger-table-body"></tbody>
             </table>
         </section>
 
-        <!-- TAB 2: BLOGS (Sync with blog_data.js) -->
-        <section id="tab-blogs" class="tab-content">
+        <!-- TAB 2: SHOWROOM DATABASE (PERSISTENT DATA) -->
+        <section id="tab-showroom-list" class="tab-content">
             <div class="section-title">
-                <span class="sync-font">BLOG_CONTROL_PANEL</span>
-                <span style="font-size: 0.7rem; color: var(--neon-green);">TOTAL_DOCS: <span id="blog-count">0</span></span>
+                <span class="sync-font">SHOWROOM_ASSET_MANAGER</span>
+                <span style="font-size: 0.7rem; color: var(--neon-green);">STORED_UNITS: <span id="sr-count">0</span></span>
             </div>
+            <p style="color: var(--text-muted); font-size: 0.7rem; margin-bottom: 20px;">// DATA INJECTED REMAINS IN THIS PERSISTENT LAYER UNTIL PURGED.</p>
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>TITLE</th>
-                        <th>AUTHOR</th>
-                        <th>DOC_ID</th>
+                        <th>UNIT_NAME</th>
+                        <th>YEAR</th>
+                        <th>STATUS</th>
                         <th>ACTION</th>
                     </tr>
                 </thead>
-                <tbody id="blog-table-body"></tbody>
+                <tbody id="sr-table-body"></tbody>
             </table>
         </section>
 
-        <!-- TAB 3: SHOWROOM CREATOR -->
+        <!-- TAB 3: SHOWROOM CREATOR (UNCHANGED OPTIONS & FIELDS) -->
         <section id="tab-showroom" class="tab-content">
             <div class="section-title">
-                <span class="sync-font">SHOWROOM_ASSET_INJECTION</span>
-                <span style="font-size: 0.6rem; color: var(--text-muted);">// POPULATE_SHOWROOM_DAT</span>
+                <span class="sync-font" id="form-header">SHOWROOM_ASSET_INJECTION</span>
             </div>
             
             <form id="showroom-form" onsubmit="handleShowroomSubmit(event)">
+                <input type="hidden" id="edit-id">
                 <div class="form-grid">
                     <!-- IDENTITY -->
                     <div class="form-section-header">01 // IDENTITY_&_MARKET</div>
@@ -485,7 +407,8 @@
                         <input type="url" id="sr-movie-img" placeholder="https://...">
                     </div>
 
-                    <button type="submit" class="btn-submit">INJECT_ASSET_TO_BUFFER</button>
+                    <button type="submit" id="submit-btn" class="btn-submit">INJECT_ASSET_TO_DATABASE</button>
+                    <button type="button" id="cancel-btn" class="btn-cancel" onclick="clearSrForm()">CANCEL_MODIFICATION</button>
                 </div>
             </form>
         </section>
@@ -494,15 +417,17 @@
     <div id="notification">SYSTEM_UPDATED</div>
 
     <script>
-        // CORE STATE - Sourced from Persistent Storage and External Files
+        // CORE PERSISTENT STATE
         let activeCreators = JSON.parse(localStorage.getItem('apex_authorized_creators')) || [];
-        let blogDataFeed = window.blogData || []; // STRICTLY from blog_data.js now (No local cache fallbacks)
-        let showroomBuffer = [];
+        let persistentShowroom = JSON.parse(localStorage.getItem('apex_persistent_showroom')) || [];
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content, .nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(b => { if(b.getAttribute('onclick').includes(tabId)) b.classList.add('active'); });
+            renderTables();
         }
 
         function showNotification(msg) {
@@ -512,26 +437,12 @@
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
 
-        function terminateSession() {
-            if(confirm("Are you sure you want to terminate the current overseer session?")) {
-                document.body.style.opacity = '0';
-                document.body.style.transition = '0.5s';
-                setTimeout(() => {
-                    window.location.href = "index.html";
-                }, 500);
-            }
-        }
-
-        // --- BLOGGER SYNC LOGIC (Sourced from login_creator.html events) ---
         function checkIncomingRegistrations() {
             const latestEventRaw = localStorage.getItem('latest_creator_event');
             if (latestEventRaw) {
                 const event = JSON.parse(latestEventRaw);
-                // Catch both REGISTRATION and LOGIN so test logins appear in the system
                 if (event.action === 'REGISTRATION' || event.action === 'LOGIN') {
-                    // Check if they already exist
-                    const exists = activeCreators.find(c => c.name === event.user);
-                    if (!exists) {
+                    if (!activeCreators.find(c => c.name === event.user)) {
                         activeCreators.push({
                             name: event.user,
                             date: new Date(event.timestamp).toLocaleDateString(),
@@ -540,7 +451,7 @@
                         localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
                     }
                 }
-                localStorage.removeItem('latest_creator_event'); // Clear event
+                localStorage.removeItem('latest_creator_event');
                 renderTables();
             }
         }
@@ -549,92 +460,138 @@
             // Bloggers Table
             const bTable = document.getElementById('blogger-table-body');
             document.getElementById('blogger-count').innerText = activeCreators.length;
-            
-            if (activeCreators.length === 0) {
-                bTable.innerHTML = `<tr><td colspan="4" style="text-align:center; opacity:0.3">WAITING_FOR_REGISTRATIONS...</td></tr>`;
-            } else {
-                bTable.innerHTML = activeCreators.map(u => `
-                    <tr>
-                        <td style="color:#fff">${u.name}</td>
-                        <td>${u.date}</td>
-                        <td style="color:var(--neon-green)">${u.id}</td>
-                        <td><button class="btn-delete" onclick="removeCreator('${u.id}')">REVOKE</button></td>
-                    </tr>
-                `).join('');
-            }
+            bTable.innerHTML = activeCreators.map(u => `
+                <tr><td style="color:#fff">${u.name}</td><td>${u.date}</td><td style="color:var(--neon-green)">${u.id}</td>
+                <td><button class="btn-delete" onclick="removeCreator('${u.id}')">REVOKE</button></td></tr>
+            `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">NO_OPERATORS_ONLINE</td></tr>`;
 
-            // Blogs Table
-            const blTable = document.getElementById('blog-table-body');
-            document.getElementById('blog-count').innerText = blogDataFeed.length;
-            
-            if (blogDataFeed.length === 0) {
-                blTable.innerHTML = `<tr><td colspan="4" style="text-align:center; opacity:0.3">NO_DATA_IN_BLOG_DATA.JS</td></tr>`;
-            } else {
-                blTable.innerHTML = blogDataFeed.map(b => `
-                    <tr>
-                        <td style="color:#fff">${b.title}</td>
-                        <td>${b.author || 'UNKNOWN'}</td>
-                        <td>${b.id || 'N/A'}</td>
-                        <td><button class="btn-delete" onclick="showNotification('DELETE_VIA_JS_FILE')">LOCKED</button></td>
-                    </tr>
-                `).join('');
-            }
+            // Showroom Manager Table
+            const srTable = document.getElementById('sr-table-body');
+            document.getElementById('sr-count').innerText = persistentShowroom.length;
+            srTable.innerHTML = persistentShowroom.map(c => `
+                <tr>
+                    <td style="color:#fff">${c.name}</td>
+                    <td>${c.year}</td>
+                    <td>${c.marketStatus}</td>
+                    <td>
+                        <button class="btn-edit" onclick="editAsset('${c.id}')">EDIT</button>
+                        <button class="btn-delete" onclick="deleteAsset('${c.id}')">PURGE</button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">DATABASE_EMPTY</td></tr>`;
         }
 
-        function removeCreator(id) {
-            if(confirm(`Revoke access for ${id}?`)) {
-                activeCreators = activeCreators.filter(item => item.id !== id);
-                localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
-                renderTables();
-                showNotification(`AUTH_REVOKED`);
-            }
-        }
-
-        // --- SHOWROOM LOGIC ---
         function handleShowroomSubmit(e) {
             e.preventDefault();
-            const newCar = {
-                id: "CAR-" + Date.now().toString().slice(-4),
+            const editId = document.getElementById('edit-id').value;
+            const carData = {
+                id: editId || "CAR-" + Date.now(),
                 name: document.getElementById('sr-name').value,
                 marketStatus: document.getElementById('sr-market').value,
                 year: document.getElementById('sr-year').value,
+                origin: document.getElementById('sr-origin').value,
                 images: {
                     desktop: document.getElementById('sr-img-desk').value,
                     mobile: document.getElementById('sr-img-mob').value
                 },
                 model3D: document.getElementById('sr-model').value,
+                specs: {
+                    engine: document.getElementById('sr-engine').value,
+                    hp: document.getElementById('sr-hp').value,
+                    topSpeed: document.getElementById('sr-speed').value,
+                    production: document.getElementById('sr-prod').value
+                },
                 legacy: {
+                    specialReason: document.getElementById('sr-special-reason').value,
                     story: document.getElementById('sr-story').value,
                     mediaList: document.getElementById('sr-movies').value,
                     mediaImage: document.getElementById('sr-movie-img').value
                 }
             };
-            showroomBuffer.push(newCar);
-            showNotification(`${newCar.name.toUpperCase()} CACHED`);
-            e.target.reset();
-        }
 
-        function exportData(filename) {
-            let content = `/* APEX EXPORT // ${new Date().toLocaleString()} */\n\n`;
-            
-            if(filename === 'dat.js') {
-                content += `window.carDatabase = ${JSON.stringify(showroomBuffer, null, 4)};`;
+            if(editId) {
+                const index = persistentShowroom.findIndex(c => c.id === editId);
+                persistentShowroom[index] = carData;
+                showNotification("DATABASE_UPDATED");
             } else {
-                content += `window.blogData = ${JSON.stringify(blogDataFeed, null, 4)};`;
+                persistentShowroom.push(carData);
+                showNotification("ASSET_INJECTED_SUCCESSFULLY");
             }
 
+            localStorage.setItem('apex_persistent_showroom', JSON.stringify(persistentShowroom));
+            clearSrForm();
+            switchTab('tab-showroom-list');
+        }
+
+        function editAsset(id) {
+            const car = persistentShowroom.find(c => c.id === id);
+            if(!car) return;
+
+            document.getElementById('edit-id').value = car.id;
+            document.getElementById('sr-name').value = car.name;
+            document.getElementById('sr-market').value = car.marketStatus;
+            document.getElementById('sr-year').value = car.year;
+            document.getElementById('sr-origin').value = car.origin;
+            document.getElementById('sr-img-desk').value = car.images.desktop;
+            document.getElementById('sr-img-mob').value = car.images.mobile;
+            document.getElementById('sr-model').value = car.model3D;
+            document.getElementById('sr-engine').value = car.specs.engine;
+            document.getElementById('sr-hp').value = car.specs.hp;
+            document.getElementById('sr-speed').value = car.specs.topSpeed;
+            document.getElementById('sr-prod').value = car.specs.production;
+            document.getElementById('sr-special-reason').value = car.legacy.specialReason;
+            document.getElementById('sr-story').value = car.legacy.story;
+            document.getElementById('sr-movies').value = car.legacy.mediaList;
+            document.getElementById('sr-movie-img').value = car.legacy.mediaImage;
+
+            document.getElementById('form-header').innerText = "MODIFY_DATABASE_ASSET";
+            document.getElementById('submit-btn').innerText = "SAVE_MODIFICATIONS";
+            document.getElementById('cancel-btn').style.display = "block";
+            switchTab('tab-showroom');
+        }
+
+        function clearSrForm() {
+            document.getElementById('showroom-form').reset();
+            document.getElementById('edit-id').value = '';
+            document.getElementById('form-header').innerText = "SHOWROOM_ASSET_INJECTION";
+            document.getElementById('submit-btn').innerText = "INJECT_ASSET_TO_DATABASE";
+            document.getElementById('cancel-btn').style.display = "none";
+        }
+
+        function deleteAsset(id) {
+            if(confirm("PERMANENTLY_PURGE_ASSET_FROM_CORE?")) {
+                persistentShowroom = persistentShowroom.filter(c => c.id !== id);
+                localStorage.setItem('apex_persistent_showroom', JSON.stringify(persistentShowroom));
+                renderTables();
+                showNotification("ASSET_PURGED");
+            }
+        }
+
+        function exportDatJS() {
+            const content = `/* APEX SHOWROOM DATA // EXPORTED ${new Date().toLocaleString()} */\n\nwindow.carDatabase = ${JSON.stringify(persistentShowroom, null, 4)};`;
             const blob = new Blob([content], { type: 'text/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = "dat.js";
             a.click();
-            showNotification(`${filename} DOWNLOADED`);
+            showNotification("DAT.JS_GENERATED");
+        }
+
+        function removeCreator(id) {
+            if(confirm("REVOKE_OPERATOR_ACCESS?")) {
+                activeCreators = activeCreators.filter(c => c.id !== id);
+                localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
+                renderTables();
+            }
+        }
+
+        function terminateSession() {
+            if(confirm("TERMINATE_OVERSEER_SESSION?")) window.location.href = "index.html";
         }
 
         window.onload = () => {
             renderTables();
-            // Start polling for new creator registrations
             setInterval(checkIncomingRegistrations, 2000);
         };
     </script>
