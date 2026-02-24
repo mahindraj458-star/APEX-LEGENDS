@@ -21,6 +21,7 @@
             --text-main: #e0e0e0;
             --text-muted: #666;
             --sidebar-width: 320px;
+            --gemini-purple: #8e44ad;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -233,9 +234,28 @@
 
         .btn-edit:hover { background: var(--neon-green); color: #000; }
 
-        /* FORM STYLES (MATCHING ORIGINAL CREATOR) */
+        /* AI TOOLS */
+        .ai-btn {
+            background: var(--gemini-purple);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            cursor: pointer;
+            border-radius: 2px;
+            margin-left: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.2s;
+        }
+        .ai-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
+        .ai-btn:disabled { background: #444; cursor: not-allowed; }
+
+        /* FORM STYLES */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; position: relative; }
         .form-group.full-width { grid-column: 1 / -1; }
         .form-group label { display: block; color: var(--neon-green); font-size: 0.65rem; margin-bottom: 8px; letter-spacing: 1px; font-weight: 700; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; background: rgba(0,0,0,0.6); border: 1px solid var(--neon-dim); color: #fff; padding: 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; outline: none; }
@@ -243,6 +263,17 @@
         .form-section-header::after { content: ''; flex: 1; height: 1px; background: #222; }
         .btn-submit { grid-column: 1 / -1; background: var(--neon-green); color: #000; border: none; padding: 20px; font-family: 'Syncopate', sans-serif; font-size: 0.9rem; letter-spacing: 4px; cursor: pointer; transition: 0.3s; margin-top: 20px; }
         .btn-cancel { grid-column: 1 / -1; background: #222; color: #fff; border: none; padding: 10px; font-family: 'Syncopate', sans-serif; font-size: 0.7rem; cursor: pointer; margin-top: 5px; display: none; }
+
+        /* LOADING SPINNER */
+        .spinner {
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         #notification {
             position: fixed;
@@ -259,6 +290,21 @@
         }
 
         #notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* AI IMAGE PREVIEW */
+        .ai-image-preview {
+            width: 100%;
+            height: 200px;
+            background: #111;
+            border: 1px dashed #333;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .ai-image-preview img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -266,7 +312,7 @@
     <nav id="sidebar">
         <div class="brand-header">
             <h1 class="sync-font">APEX</h1>
-            <p>OVERSEER_TERMINAL v6.0</p>
+            <p>OVERSEER_TERMINAL v6.5 ✨AI</p>
         </div>
 
         <button class="nav-btn active" onclick="switchTab('tab-bloggers')">[01] MANAGE_BLOGGERS</button>
@@ -301,7 +347,7 @@
             </table>
         </section>
 
-        <!-- TAB 2: SHOWROOM DATABASE (PERSISTENT DATA) -->
+        <!-- TAB 2: SHOWROOM DATABASE -->
         <section id="tab-showroom-list" class="tab-content">
             <div class="section-title">
                 <span class="sync-font">SHOWROOM_ASSET_MANAGER</span>
@@ -321,10 +367,14 @@
             </table>
         </section>
 
-        <!-- TAB 3: SHOWROOM CREATOR (UNCHANGED OPTIONS & FIELDS) -->
+        <!-- TAB 3: SHOWROOM CREATOR -->
         <section id="tab-showroom" class="tab-content">
             <div class="section-title">
                 <span class="sync-font" id="form-header">SHOWROOM_ASSET_INJECTION</span>
+                <button class="ai-btn" onclick="verifyTelemetryData()" id="btn-verify-ai">
+                    <span class="spinner" id="spinner-verify"></span>
+                    ✨ VERIFY TELEMETRY
+                </button>
             </div>
             
             <form id="showroom-form" onsubmit="handleShowroomSubmit(event)">
@@ -388,23 +438,51 @@
                         <input type="text" id="sr-prod" required placeholder="1,311 Units">
                     </div>
 
-                    <!-- LORE & SPECIALS -->
-                    <div class="form-section-header">04 // SPECIALITIES_&_LEGACY</div>
+                    <!-- LORE & CINEMATIC -->
+                    <div class="form-section-header">04 // SPECIALITIES_&_CINEMATIC</div>
                     <div class="form-group full-width">
                         <label>WHY IS THIS CAR SPECIAL?</label>
                         <textarea id="sr-special-reason" required placeholder="Key differentiator..."></textarea>
                     </div>
                     <div class="form-group full-width">
-                        <label>CORE NARRATIVE (HISTORY)</label>
-                        <textarea id="sr-story" required placeholder="Historical deep dive..."></textarea>
+                        <label>
+                            CORE NARRATIVE (HISTORY) 
+                            <button type="button" class="ai-btn" onclick="aiWeaveNarrative()" id="btn-weave-ai">
+                                <span class="spinner" id="spinner-weave"></span>
+                                ✨ AI WEAVE NARRATIVE
+                            </button>
+                        </label>
+                        <textarea id="sr-story" required placeholder="Type facts here, then click AI Weave..."></textarea>
                     </div>
+                    
+                    <!-- NEW CINEMATIC DESCRIPTION FIELD -->
+                    <div class="form-group full-width">
+                        <label>
+                            CINEMATIC DESCRIPTION (SCENE_SCRIPT)
+                            <button type="button" class="ai-btn" onclick="aiWeaveCinematic()" id="btn-cin-ai">
+                                <span class="spinner" id="spinner-cin"></span>
+                                ✨ AI SCENE SCRIPT
+                            </button>
+                        </label>
+                        <textarea id="sr-cin-desc" placeholder="Describe the scene setup, lighting, and camera movement..."></textarea>
+                    </div>
+
                     <div class="form-group">
                         <label>CINEMATIC FEATURES (TITLE LIST)</label>
                         <input type="text" id="sr-movies" placeholder="e.g. James Bond">
                     </div>
                     <div class="form-group">
-                        <label>CINEMATIC ASSET URL (MOVIE STILL)</label>
+                        <label>
+                            CINEMATIC ASSET URL (MOVIE STILL)
+                            <button type="button" class="ai-btn" onclick="aiGenerateConcept()" id="btn-gen-ai">
+                                <span class="spinner" id="spinner-gen"></span>
+                                ✨ GEN CINEMATIC ART
+                            </button>
+                        </label>
                         <input type="url" id="sr-movie-img" placeholder="https://...">
+                        <div class="ai-image-preview" id="ai-preview-box">
+                            <span id="ai-preview-text" style="color:#333; font-size: 0.6rem;">NO_AI_PREVIEW_GENERATED</span>
+                        </div>
                     </div>
 
                     <button type="submit" id="submit-btn" class="btn-submit">INJECT_ASSET_TO_DATABASE</button>
@@ -417,6 +495,8 @@
     <div id="notification">SYSTEM_UPDATED</div>
 
     <script>
+        const apiKey = ""; // Provided at runtime
+
         // CORE PERSISTENT STATE
         let activeCreators = JSON.parse(localStorage.getItem('apex_authorized_creators')) || [];
         let persistentShowroom = JSON.parse(localStorage.getItem('apex_persistent_showroom')) || [];
@@ -436,6 +516,167 @@
             notif.classList.add('show');
             setTimeout(() => notif.classList.remove('show'), 3000);
         }
+
+        // --- GEMINI API INTEGRATIONS ---
+
+        async function callGemini(prompt, systemInstruction = "You are a specialized automotive archive AI assistant.") {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error('API Error');
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (err) {
+                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+                }
+            }
+            throw new Error("API Connection Failure after retries.");
+        }
+
+        async function aiWeaveNarrative() {
+            const storyArea = document.getElementById('sr-story');
+            const carName = document.getElementById('sr-name').value;
+            const input = storyArea.value.trim();
+            if (!input || !carName) return showNotification("INPUT_REQUIRED: NAME + FACTS");
+
+            const btn = document.getElementById('btn-weave-ai');
+            const spinner = document.getElementById('spinner-weave');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            try {
+                const prompt = `Write a cinematic, high-end automotive narrative for the ${carName}. Use these facts: ${input}. Focus on speed, legacy, and engineering. Keep it between 150-250 words. Do not include titles or headings.`;
+                const result = await callGemini(prompt, "You are a professional automotive journalist for a high-end archive.");
+                storyArea.value = result;
+                showNotification("NARRATIVE_WOVEN");
+            } catch (err) {
+                showNotification("AI_FAILURE_RETRY_LATER");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        // NEW AI FEATURE: CINEMATIC SCENE SCRIPT
+        async function aiWeaveCinematic() {
+            const cinArea = document.getElementById('sr-cin-desc');
+            const carName = document.getElementById('sr-name').value;
+            const engine = document.getElementById('sr-engine').value;
+            const story = document.getElementById('sr-story').value;
+
+            if (!carName) return showNotification("UNIT_NAME_REQUIRED");
+
+            const btn = document.getElementById('btn-cin-ai');
+            const spinner = document.getElementById('spinner-cin');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            try {
+                const prompt = `Generate a cinematic technical scene description for the ${carName} (Engine: ${engine}). Describe the lighting (moody, neon, or high-key), the camera movements (tracking shots, low-angle pans), and the environment. Reference the car's story briefly: ${story.substring(0, 100)}. Format it like a screenplay direction.`;
+                const result = await callGemini(prompt, "You are a professional Hollywood cinematographer and automotive director.");
+                cinArea.value = result;
+                showNotification("SCENE_SCRIPT_READY");
+            } catch (err) {
+                showNotification("CINEMATIC_AI_OFFLINE");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        async function verifyTelemetryData() {
+            const carName = document.getElementById('sr-name').value;
+            const engine = document.getElementById('sr-engine').value;
+            const hp = document.getElementById('sr-hp').value;
+            const speed = document.getElementById('sr-speed').value;
+
+            if (!carName || !hp) return showNotification("INPUT_REQUIRED: NAME + DATA");
+
+            const btn = document.getElementById('btn-verify-ai');
+            const spinner = document.getElementById('spinner-verify');
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+
+            try {
+                const prompt = `Verify the specs for the ${carName}. Listed specs: Engine: ${engine}, HP: ${hp}, Top Speed: ${speed}. Check if these are historically accurate. If they are correct, just say "TELEMETRY_VERIFIED". If not, provide the correct values briefly.`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        tools: [{ "google_search": {} }]
+                    })
+                });
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (text.includes("TELEMETRY_VERIFIED")) {
+                    showNotification("✅ DATA_VERIFIED_BY_AI");
+                } else {
+                    alert(`AI AUDIT REPORT:\n\n${text}`);
+                }
+            } catch (err) {
+                showNotification("VERIFICATION_OFFLINE");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        async function aiGenerateConcept() {
+            const carName = document.getElementById('sr-name').value;
+            const cinDesc = document.getElementById('sr-cin-desc').value;
+            if (!carName) return showNotification("UNIT_NAME_REQUIRED");
+
+            const btn = document.getElementById('btn-gen-ai');
+            const spinner = document.getElementById('spinner-gen');
+            const previewBox = document.getElementById('ai-preview-box');
+            
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            previewBox.innerHTML = '<span style="color:var(--neon-green)">GENERATING_VISUAL...</span>';
+
+            try {
+                // Incorporate Cinematic Description into image prompt
+                const promptText = `A hyper-realistic cinematic movie still of a ${carName}. Scene context: ${cinDesc.substring(0, 200) || 'driving through a neon-lit cyberpunk city at night'}. 8k, cinematic lighting, dramatic shadows, moody atmosphere.`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        instances: { prompt: promptText },
+                        parameters: { sampleCount: 1 }
+                    })
+                });
+                
+                const result = await response.json();
+                const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                
+                previewBox.innerHTML = `<img src="${imageUrl}" alt="AI Concept">`;
+                document.getElementById('sr-movie-img').value = "AI_GENERATED_CONCEPT_BLOB";
+                showNotification("CINEMATIC_ART_READY");
+            } catch (err) {
+                previewBox.innerHTML = '<span style="color:var(--alert-red)">GEN_FAILED</span>';
+                showNotification("VISUAL_CORE_FAILURE");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+            }
+        }
+
+        // --- STANDARD APP LOGIC ---
 
         function checkIncomingRegistrations() {
             const latestEventRaw = localStorage.getItem('latest_creator_event');
@@ -457,7 +698,6 @@
         }
 
         function renderTables() {
-            // Bloggers Table
             const bTable = document.getElementById('blogger-table-body');
             document.getElementById('blogger-count').innerText = activeCreators.length;
             bTable.innerHTML = activeCreators.map(u => `
@@ -465,7 +705,6 @@
                 <td><button class="btn-delete" onclick="removeCreator('${u.id}')">REVOKE</button></td></tr>
             `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">NO_OPERATORS_ONLINE</td></tr>`;
 
-            // Showroom Manager Table
             const srTable = document.getElementById('sr-table-body');
             document.getElementById('sr-count').innerText = persistentShowroom.length;
             srTable.innerHTML = persistentShowroom.map(c => `
@@ -504,6 +743,7 @@
                 legacy: {
                     specialReason: document.getElementById('sr-special-reason').value,
                     story: document.getElementById('sr-story').value,
+                    cinematicDescription: document.getElementById('sr-cin-desc').value, // SAVED TO DB
                     mediaList: document.getElementById('sr-movies').value,
                     mediaImage: document.getElementById('sr-movie-img').value
                 }
@@ -541,6 +781,7 @@
             document.getElementById('sr-prod').value = car.specs.production;
             document.getElementById('sr-special-reason').value = car.legacy.specialReason;
             document.getElementById('sr-story').value = car.legacy.story;
+            document.getElementById('sr-cin-desc').value = car.legacy.cinematicDescription || '';
             document.getElementById('sr-movies').value = car.legacy.mediaList;
             document.getElementById('sr-movie-img').value = car.legacy.mediaImage;
 
@@ -556,6 +797,7 @@
             document.getElementById('form-header').innerText = "SHOWROOM_ASSET_INJECTION";
             document.getElementById('submit-btn').innerText = "INJECT_ASSET_TO_DATABASE";
             document.getElementById('cancel-btn').style.display = "none";
+            document.getElementById('ai-preview-box').innerHTML = '<span id="ai-preview-text" style="color:#333; font-size: 0.6rem;">NO_AI_PREVIEW_GENERATED</span>';
         }
 
         function deleteAsset(id) {
