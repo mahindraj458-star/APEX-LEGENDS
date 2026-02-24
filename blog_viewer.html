@@ -3,254 +3,306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APEX // DATA_VIEWER</title>
+    <title>APEX // THE_PULSE_READER</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&family=Syncopate:wght@700&display=swap" rel="stylesheet">
-    <!-- Assuming blog_data.js contains window.blogPosts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Loading your actual blog data -->
     <script src="blog_data.js"></script>
+
     <style>
         :root {
-            --bg: #050505;
-            --accent: #ff1111;
-            --text: #eee;
+            --bg-color: #030303;
+            --text-main: #f0f0f0;
+            --text-muted: #888;
+            --accent: #ffffff;
+            --alert: #ff1111;
+            --glass: rgba(10, 10, 10, 0.85);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; }
 
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            line-height: 1.7;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- LOADING SHUTTER --- */
-        #shutter {
+        .sync-font { font-family: 'Syncopate', sans-serif; text-transform: uppercase; }
+
+        /* --- PROGRESS BAR --- */
+        #progress-container {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 9999;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: rgba(255,255,255,0.05);
+            z-index: 1001;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--alert);
+            box-shadow: 0 0 15px var(--alert);
+            transition: width 0.1s ease-out;
+        }
+
+        /* --- NAVIGATION --- */
+        nav {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            padding: 40px 5vw;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            transition: opacity 0.8s ease;
+            z-index: 1000;
+            background: linear-gradient(to bottom, rgba(3,3,3,0.9), rgba(3,3,3,0));
+            pointer-events: none;
         }
+        nav a { pointer-events: auto; }
+        .logo { font-size: 1.2rem; letter-spacing: 8px; color: #fff; text-decoration: none; font-weight: 700; }
+        .back-link { font-family: 'Syncopate'; font-size: 0.65rem; color: var(--alert); text-decoration: none; letter-spacing: 3px; border: 1px solid var(--alert); padding: 8px 15px; transition: 0.3s; }
+        .back-link:hover { background: var(--alert); color: #fff; }
 
-        .loader-text {
-            font-family: 'Syncopate';
-            color: var(--accent);
-            font-size: 0.8rem;
-            letter-spacing: 4px;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* --- CONTENT LAYOUT --- */
-        .viewer-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 100px 20px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: 1s all ease;
-        }
-
-        .viewer-container.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .nav-back {
-            position: fixed;
-            top: 40px;
-            left: 40px;
-            font-family: 'Syncopate';
-            color: #444;
-            text-decoration: none;
-            font-size: 0.7rem;
-            transition: 0.3s;
-            z-index: 100;
-        }
-
-        .nav-back:hover { color: var(--accent); }
-
-        .post-meta {
-            color: var(--accent);
-            font-size: 0.75rem;
-            font-family: 'Syncopate';
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        .post-title {
-            font-family: 'Syncopate';
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            line-height: 1.1;
-            margin-bottom: 40px;
-            letter-spacing: -2px;
-        }
-
-        .post-image {
+        /* --- HERO SECTION --- */
+        .article-hero {
+            height: 100vh;
             width: 100%;
-            border: 1px solid #1a1a1a;
-            margin-bottom: 50px;
-            filter: grayscale(100%);
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            padding: 15vh 8vw;
+            overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+        .hero-bg img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.2) brightness(0.5); transform: scale(1.05); }
+        .hero-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, var(--bg-color) 0%, transparent 70%),
+                        linear-gradient(to right, rgba(3,3,3,0.8) 0%, transparent 50%);
+        }
+
+        .hero-content { max-width: 1200px; z-index: 10; }
+        .category-tag { font-family: 'Syncopate'; font-size: 0.75rem; color: var(--alert); letter-spacing: 5px; margin-bottom: 25px; display: block; }
+        .article-title { font-size: clamp(2.5rem, 7vw, 5.5rem); line-height: 1; margin-bottom: 30px; text-transform: uppercase; letter-spacing: -2px; }
+        .article-meta { font-size: 0.9rem; color: var(--text-muted); display: flex; gap: 40px; border-top: 1px solid #333; padding-top: 25px; letter-spacing: 2px; }
+        .article-meta span b { color: #fff; font-weight: 500; }
+
+        /* --- ARTICLE CONTENT (ENHANCED WIDTH) --- */
+        .article-wrapper {
+            max-width: 1100px; /* Increased from 850px */
+            margin: 0 auto;
+            padding: 120px 5vw;
+            position: relative;
+        }
+        .article-body { font-size: 1.5rem; color: #ccc; font-weight: 300; }
+        .article-body p { margin-bottom: 45px; }
+        .article-body h2, .article-body h3 { 
+            font-family: 'Syncopate'; 
+            color: #fff; 
+            font-size: 1.5rem; 
+            margin: 90px 0 40px; 
+            letter-spacing: 4px;
+            display: flex;
+            align-items: center;
+        }
+        .article-body h2::before {
+            content: '';
+            width: 40px;
+            height: 2px;
+            background: var(--alert);
+            margin-right: 20px;
+        }
+        
+        .article-body .list-item {
+            display: block;
+            margin-bottom: 18px;
+            padding-left: 25px;
+            border-left: 1px solid #444;
+            color: #eee;
+        }
+
+        /* --- AI FLOATER --- */
+        .ai-status {
+            position: sticky;
+            top: 150px;
+            float: right;
+            width: 300px;
+            margin-right: -360px; /* Pushed further out to accommodate wider text */
+            padding: 30px;
+            background: var(--glass);
+            border: 1px solid #222;
+            backdrop-filter: blur(15px);
+            z-index: 50;
+        }
+        .ai-status h4 { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--alert); margin-bottom: 15px; letter-spacing: 2px; }
+        #ai-insight { font-size: 0.85rem; color: #999; line-height: 1.5; font-style: italic; }
+
+        /* --- FOOTER / NEXT --- */
+        footer {
+            padding: 150px 8vw 100px;
+            border-top: 1px solid #111;
+            background: #050505;
+        }
+        .next-section-label { font-family: 'Syncopate'; font-size: 0.7rem; color: var(--alert); letter-spacing: 5px; margin-bottom: 40px; text-align: center; }
+        .next-card {
+            display: block;
+            max-width: 1100px;
+            margin: 0 auto;
+            text-decoration: none;
+            position: relative;
+            padding: 80px 60px;
+            border: 1px solid #151515;
             transition: 0.5s;
+            overflow: hidden;
         }
-        .post-image:hover { filter: grayscale(0%); }
-
-        .post-body {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #bbb;
-        }
-
-        .post-body p { margin-bottom: 25px; }
-
-        /* AI Action Bar */
-        .ai-bar {
-            margin-top: 80px;
-            padding-top: 40px;
-            border-top: 1px solid #1a1a1a;
-        }
-
-        .ai-btn {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: #fff;
-            padding: 12px 24px;
+        .next-card:hover { border-color: #333; background: #080808; }
+        .next-card h4 { font-size: 3rem; color: #fff; position: relative; z-index: 2; line-height: 1.1; }
+        .next-card .bg-hint {
+            position: absolute;
+            right: -50px; bottom: -50px;
             font-family: 'Syncopate';
-            font-size: 0.65rem;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .ai-btn:hover { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
-
-        #ai-response {
-            margin-top: 30px;
-            background: #0a0a0a;
-            padding: 20px;
-            font-size: 0.9rem;
-            color: #888;
-            display: none;
-            border-left: 2px solid var(--accent);
+            font-size: 10rem;
+            opacity: 0.03;
+            pointer-events: none;
         }
 
-        @media (max-width: 768px) {
-            .nav-back { top: 20px; left: 20px; }
-            .viewer-container { padding: 80px 20px; }
+        @media (max-width: 1400px) {
+            .ai-status { 
+                position: relative; 
+                float: none; 
+                margin: 0 auto 60px; 
+                width: 100%; 
+                max-width: 1100px;
+                top: 0;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="shutter">
-        <div class="loader-text">ACCESSING_ARCHIVE...</div>
+    <div id="progress-container"><div id="progress-bar"></div></div>
+
+    <nav>
+        <a href="blog.html" class="logo sync-font">APEX</a>
+        <a href="blog.html" class="back-link">TERMINATE_READER</a>
+    </nav>
+
+    <div id="article-root">
+        <!-- Dynamic content injected here -->
     </div>
 
-    <a href="blog.html" class="nav-back">[ VOLVER_A_BLOG ]</a>
-
-    <main class="viewer-container" id="content-main">
-        <div id="post-target">
-            <!-- Data injected here -->
-        </div>
-
-        <section class="ai-bar">
-            <button class="ai-btn" onclick="runAnalysis()">✨ ANALYZE_DATA_STREAM</button>
-            <div id="ai-response"></div>
-        </section>
-    </main>
+    <footer>
+        <div class="next-section-label">CONTINUE_CHRONICLE</div>
+        <div id="next-article-container"></div>
+    </footer>
 
     <script>
-        const apiKey = ""; // Gemini API Key
+        const apiKey = ""; 
 
-        // 1. SAFE DATA LOADING LOGIC
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('id');
-
-            // If no ID is found, redirect back to main blog
-            if (!postId) {
-                window.location.href = 'blog.html';
-                return;
-            }
-
-            // Look for the post in our data array
-            // Assuming window.blogPosts exists from blog_data.js
-            const posts = window.blogPosts || [];
-            const post = posts.find(p => p.id == postId);
-
-            if (post) {
-                renderPost(post);
-            } else {
-                document.getElementById('post-target').innerHTML = `
-                    <h1 class="post-title">404 // NODE_NOT_FOUND</h1>
-                    <p>The requested data stream does not exist in the current archives.</p>
-                `;
-                revealPage();
-            }
+        window.onscroll = function() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
         };
 
-        function renderPost(post) {
-            const target = document.getElementById('post-target');
-            target.innerHTML = `
-                <span class="post-meta">DATE: ${post.date || 'UNKNOWN'} // REF_ID: ${post.id}</span>
-                <h1 class="post-title">${post.title}</h1>
-                ${post.image ? `<img src="${post.image}" class="post-image" alt="Visual Data">` : ''}
-                <div class="post-body">
-                    ${post.content}
-                </div>
-            `;
-            
-            // Set document title to post title
-            document.title = `APEX // ${post.title}`;
-            
-            revealPage();
-        }
-
-        function revealPage() {
-            setTimeout(() => {
-                document.getElementById('shutter').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('shutter').style.display = 'none';
-                    document.getElementById('content-main').classList.add('active');
-                }, 800);
-            }, 1000);
-        }
-
-        // 2. GEMINI AI INTEGRATION
-        async function runAnalysis() {
-            const resBox = document.getElementById('ai-response');
-            const title = document.querySelector('.post-title').innerText;
-            const body = document.querySelector('.post-body').innerText;
-
-            resBox.style.display = 'block';
-            resBox.innerText = "Initiating heuristic scan of archive content...";
-
-            const prompt = `You are the APEX System AI. Analyze this technical archive and provide a 3-sentence summary including a 'Future Impact Score'. \n\nTitle: ${title}\nContent: ${body}`;
-
+        async function fetchInsight(title) {
+            const target = document.getElementById('ai-insight');
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
+                        contents: [{ parts: [{ text: `Analyze this article title: "${title}". Provide a cold, one-sentence futuristic automotive insight (max 20 words).` }] }]
                     })
                 });
-
                 const data = await response.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "ERROR: Data stream corrupted.";
-                resBox.innerText = text;
-            } catch (err) {
-                resBox.innerText = "CRITICAL_ERROR: Unable to reach Gemini Neural Network.";
+                target.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No pattern detected.";
+            } catch (e) {
+                target.innerText = "Connection lost. Archive offline.";
             }
         }
+
+        function formatContent(raw) {
+            if (!raw) return "";
+            return raw.split('\n').map(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return "";
+                if (trimmed.length < 50 && !trimmed.includes('.') && trimmed !== trimmed.toLowerCase()) {
+                    return `<h2>${trimmed}</h2>`;
+                }
+                if (trimmed.startsWith('-')) {
+                    return `<span class="list-item">${trimmed}</span>`;
+                }
+                return `<p>${trimmed}</p>`;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const posts = window.blogPosts || [];
+            const container = document.getElementById('article-root');
+            const nextContainer = document.getElementById('next-article-container');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentId = urlParams.get('id');
+            const post = posts.find(p => p.id.toString() === currentId);
+
+            if (post) {
+                container.innerHTML = `
+                    <section class="article-hero">
+                        <div class="hero-bg">
+                            <img src="${post.image}" alt="Background">
+                        </div>
+                        <div class="hero-content">
+                            <span class="category-tag sync-font">CHRONICLE // ${post.id}</span>
+                            <h1 class="article-title sync-font">${post.title}</h1>
+                            <div class="article-meta">
+                                <span>PUBLISHED: <b>${post.date}</b></span>
+                                <span>VAULT: <b>AUTOMOTIVE_EXTRACT</b></span>
+                                <span>STATUS: <b>DECLASSIFIED</b></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="article-wrapper">
+                        <aside class="ai-status">
+                            <h4 class="sync-font">NEXUS_INSIGHT</h4>
+                            <p id="ai-insight">Awaiting neural link...</p>
+                        </aside>
+                        <main class="article-body">
+                            ${formatContent(post.content)}
+                        </main>
+                    </div>
+                `;
+
+                const idx = posts.indexOf(post);
+                const nextPost = posts[(idx + 1) % posts.length];
+                if (nextPost && nextPost.id !== post.id) {
+                    nextContainer.innerHTML = `
+                        <a href="blog_viewer.html?id=${nextPost.id}" class="next-card">
+                            <h4 class="sync-font">${nextPost.title}</h4>
+                            <div class="bg-hint">NEXT</div>
+                        </a>
+                    `;
+                }
+
+                fetchInsight(post.title);
+                document.title = `APEX // ${post.title}`;
+            } else {
+                container.innerHTML = `<div style="padding:200px; text-align:center;"><div class="sync-font" style="color:var(--alert);">DATA_CORRUPTION: POST_NOT_FOUND</div></div>`;
+            }
+        });
     </script>
 </body>
 </html>
