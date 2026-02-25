@@ -235,7 +235,8 @@
 
             // Specs
             if (car.specs) {
-                document.getElementById('spec-engine').innerText = (car.specs.engine || "-").split(' ')[0];
+                // FIXED: Changed from .split(' ')[0] to show the full engine string
+                document.getElementById('spec-engine').innerText = car.specs.engine || "-";
                 document.getElementById('spec-hp').innerText = car.specs.hp || "-";
                 document.getElementById('spec-speed').innerText = car.specs.topSpeed || "-";
                 document.getElementById('spec-count').innerText = car.specs.production || "-";
