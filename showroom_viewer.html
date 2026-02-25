@@ -10,6 +10,7 @@
     
     <!-- 3D Viewer Script -->
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
+    <!-- Assuming dat.js is available in the same directory -->
     <script src="dat.js"></script>
 
     <style>
@@ -38,7 +39,7 @@
         }
         .sticky-header.visible { transform: translateY(0); }
         .sticky-header h2 { font-family: 'Syncopate'; font-size: 0.9rem; letter-spacing: 4px; text-transform: uppercase; color: var(--accent); }
-        .back-link { color: #555; text-decoration: none; font-family: 'Syncopate'; font-size: 0.6rem; transition: 0.3s; cursor: pointer; }
+        .back-link { color: #555; text-decoration: none; font-family: 'Syncopate'; font-size: 0.6rem; transition: 0.3s; cursor: pointer; border: none; background: none; }
         .back-link:hover { color: #fff; }
 
         /* --- HERO SECTION --- */
@@ -49,67 +50,50 @@
             background-repeat: no-repeat;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
+            background-color: #000;
         }
-        .hero::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); z-index: 1; }
-        .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg) 0%, transparent 60%); z-index: 2; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 1; }
+        .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, var(--bg) 0%, transparent 70%); z-index: 2; }
         
         .hero-title-box { z-index: 10; text-align: center; }
         .hero-title-box h1 { 
-            font-family: 'Stalinist One', cursive; font-size: 7vw; 
+            font-family: 'Stalinist One', cursive; font-size: 8vw; 
             text-transform: uppercase; letter-spacing: -2px; line-height: 0.9;
             text-shadow: 0 10px 50px rgba(0,0,0,0.8);
         }
         .hero-title-box p { font-family: 'Syncopate'; font-size: 0.8rem; color: var(--accent); letter-spacing: 15px; margin-top: 20px; text-transform: uppercase; }
 
         /* --- SECTIONS --- */
-        section { padding: 120px 10vw; position: relative; }
-        .section-label { font-family: 'Syncopate'; font-size: 0.6rem; color: #333; letter-spacing: 5px; margin-bottom: 30px; display: block; }
+        section { padding: 120px 10vw; position: relative; z-index: 5; }
+        .section-label { font-family: 'Syncopate'; font-size: 0.6rem; color: #444; letter-spacing: 5px; margin-bottom: 30px; display: block; }
         
         .content-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 100px; align-items: flex-start; }
         .narrative-box h2 { font-family: 'Syncopate'; font-size: 2.5rem; margin-bottom: 40px; line-height: 1.1; letter-spacing: -1px; }
-        .narrative-box p { font-size: 1.1rem; line-height: 1.9; color: #888; white-space: pre-line; }
+        .narrative-box p { font-size: 1.1rem; line-height: 1.9; color: #aaa; white-space: pre-line; }
 
         .origin-card { border-left: 1px solid var(--accent); padding-left: 30px; }
-        .origin-card h4 { color: #444; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; }
+        .origin-card h4 { color: #555; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 10px; }
         .origin-card p { font-size: 1.4rem; color: #fff; margin-bottom: 40px; }
 
         /* --- SPECS BAR --- */
         .specs-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1px; background: #111; margin-top: 80px; border: 1px solid #111;
+            gap: 1px; background: #1a1a1a; margin-top: 80px; border: 1px solid #1a1a1a;
         }
-        .spec-item { background: var(--bg); padding: 40px; }
-        .spec-item label { font-size: 0.6rem; color: #444; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .spec-item { background: var(--bg); padding: 40px; transition: 0.3s; }
+        .spec-item:hover { background: #0a0a0a; }
+        .spec-item label { font-size: 0.6rem; color: #555; display: block; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         .spec-item span { font-size: 1.3rem; color: #fff; font-weight: 500; font-family: 'Syncopate'; }
 
         /* --- 3D VIEWER --- */
-        .model-section { height: 100vh; background: #000; padding: 0; position: relative; }
-        model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
-        .viewer-hint { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: #444; font-size: 0.6rem; letter-spacing: 2px; font-family: 'Syncopate'; text-align: center;}
+        .model-section { height: 100vh; background: #000; padding: 0; position: relative; border-top: 1px solid #111; border-bottom: 1px solid #111; }
+        model-viewer { width: 100%; height: 100%; --poster-color: transparent; outline: none; }
+        .viewer-hint { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); color: #444; font-size: 0.6rem; letter-spacing: 2px; font-family: 'Syncopate'; text-align: center; z-index: 10; pointer-events: none; }
 
-        /* --- 3D ATTRIBUTION DISCLAIMER --- */
         .attribution-disclaimer {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            text-align: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            color: #555;
-            letter-spacing: 1px;
-            line-height: 1.4;
-            max-width: 800px;
-            pointer-events: auto;
-        }
-        .attribution-disclaimer a {
-            color: #777;
-            text-decoration: underline;
-            transition: color 0.2s;
-        }
-        .attribution-disclaimer a:hover {
-            color: var(--accent);
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; text-align: center; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; color: #555; letter-spacing: 1px; line-height: 1.4; max-width: 800px;
         }
 
         /* --- CINEMATIC FEATURE --- */
@@ -134,7 +118,7 @@
             .content-grid { grid-template-columns: 1fr; gap: 60px; }
             .hero-title-box h1 { font-size: 12vw; }
             .cinematic-wrap { flex-direction: column; padding: 40px; }
-            .cinematic-poster { width: 100%; height: auto; }
+            .cinematic-poster { width: 100%; height: auto; max-width: 400px; }
         }
     </style>
 </head>
@@ -144,11 +128,11 @@
         <h1>ACCESS_DENIED</h1>
         <p>NO_VALID_CAR_IDENTIFIER_FOUND. RETURN_TO_SHOWROOM.</p>
         <br>
-        <div onclick="window.history.back()" class="back-link" style="color:var(--accent)">[ REBOOT_SEQUENCE ]</div>
+        <button onclick="window.history.back()" class="back-link" style="color:var(--accent)">[ REBOOT_SEQUENCE ]</button>
     </div>
 
     <header class="sticky-header" id="navbar">
-        <div onclick="window.history.back()" class="back-link">[ SHOWROOM_INDEX ]</div>
+        <button onclick="window.history.back()" class="back-link">[ SHOWROOM_INDEX ]</button>
         <h2 id="sticky-name">---</h2>
         <div style="width: 100px;"></div> 
     </header>
@@ -169,13 +153,13 @@
             </div>
             <div class="origin-card">
                 <h4>Geographic Origin</h4>
-                <p id="origin-text"></p>
+                <p id="origin-text">---</p>
                 
-                <h4>Why is it Special?</h4>
-                <p id="special-reason" style="font-size: 1.1rem; color: #888; line-height: 1.6;"></p>
+                <h4>Core Essence</h4>
+                <p id="special-reason" style="font-size: 1.1rem; color: #888; line-height: 1.6;">---</p>
                 
                 <h4>Market Status</h4>
-                <p id="status-text" style="font-size: 1rem; color: var(--accent);"></p>
+                <p id="status-text" style="font-size: 1rem; color: var(--accent);">---</p>
             </div>
         </div>
 
@@ -190,7 +174,6 @@
     <section class="model-section">
         <div class="viewer-hint">USE MOUSE TO ROTATE // SCROLL TO ZOOM</div>
         <div id="viewer-container" style="width:100%; height:100%;"></div>
-        <!-- Attribution Area -->
         <div id="attribution-container" class="attribution-disclaimer"></div>
     </section>
 
@@ -199,47 +182,62 @@
         <div class="cinematic-wrap">
             <img id="media-img" class="cinematic-poster" src="" alt="Media Poster">
             <div class="cinematic-info">
-                <h3 id="media-title"></h3>
+                <h3 id="media-title">---</h3>
                 <p id="cinematic-main-desc">Loading legacy record...</p>
             </div>
         </div>
     </section>
 
     <footer style="padding: 100px 10vw; border-top: 1px solid #111; text-align: center;">
-        <div onclick="window.history.back()" class="back-link" style="font-size: 0.8rem; letter-spacing: 4px;">[ RETURN_TO_GALLERY ]</div>
+        <button onclick="window.history.back()" class="back-link" style="font-size: 0.8rem; letter-spacing: 4px;">[ RETURN_TO_GALLERY ]</button>
     </footer>
 
     <script>
-        // Data Fetching via URL Parameter (matches showroom navigation logic)
-        const urlParams = new URLSearchParams(window.location.search);
-        const carId = urlParams.get('id');
-        
-        const db = window.carDatabase || [];
-        const car = db.find(c => c.id === carId);
+        /**
+         * INITIALIZATION LOGIC
+         * Corrects the redirection and data loading issue.
+         */
+        function loadCarData() {
+            // 1. Get ID from URL first (Best for direct links/refreshes)
+            const urlParams = new URLSearchParams(window.location.search);
+            let carId = urlParams.get('id');
 
-        if (!car) {
-            document.getElementById('error-overlay').style.display = 'flex';
-        } else {
-            initViewer();
+            // 2. Fallback to LocalStorage if URL is missing ID
+            if (!carId && typeof localStorage !== 'undefined') {
+                carId = localStorage.getItem('selected_car_id');
+            }
+
+            // 3. Find car in Database (provided by dat.js)
+            const db = window.carDatabase || [];
+            const car = db.find(c => c.id === carId);
+
+            if (!car) {
+                document.getElementById('error-overlay').style.display = 'flex';
+                console.error("Car ID not found in database:", carId);
+                return;
+            }
+
+            // 4. Update UI
+            renderCar(car);
         }
 
-        function initViewer() {
-            // Hero Backdrop Restoration
+        function renderCar(car) {
+            // --- HERO & BACKDROP ---
+            const heroNode = document.getElementById('hero-node');
             if (car.images && car.images.desktop) {
-                const heroNode = document.getElementById('hero-node');
+                // Ensure image loads as background
                 heroNode.style.backgroundImage = `url('${car.images.desktop}')`;
             }
-            
             document.getElementById('hero-name').innerText = car.name;
             document.getElementById('sticky-name').innerText = car.name;
 
-            // Core Narrative
-            document.getElementById('narrative-text').innerText = car.legacy?.story || "NO_DATA_FOUND";
-            document.getElementById('origin-text').innerText = car.origin || "UNKNOWN";
+            // --- NARRATIVE ---
+            document.getElementById('narrative-text').innerText = car.legacy?.story || "Archive record missing.";
+            document.getElementById('origin-text').innerText = car.origin || "Unknown Origin";
             document.getElementById('special-reason').innerText = car.legacy?.specialReason || "N/A";
-            document.getElementById('status-text').innerText = car.marketStatus || "UNKNOWN";
+            document.getElementById('status-text').innerText = car.marketStatus || "Classified";
 
-            // Specs
+            // --- SPECS ---
             if (car.specs) {
                 document.getElementById('spec-engine').innerText = car.specs.engine || "-";
                 document.getElementById('spec-hp').innerText = car.specs.hp || "-";
@@ -247,26 +245,15 @@
                 document.getElementById('spec-count').innerText = car.specs.production || "-";
             }
 
-            // Cinematic / Media Section
-            const mediaTitle = car.legacy?.mediaList || "ARCHIVED_ASSET";
-            const mediaImg = car.legacy?.mediaImage || "";
-            const cinematicDesc = car.legacy?.cinematicDescription;
+            // --- MEDIA ---
+            document.getElementById('media-title').innerText = car.legacy?.mediaList || "Historical Milestone";
+            document.getElementById('media-img').src = car.legacy?.mediaImage || "";
+            document.getElementById('cinematic-main-desc').innerText = car.legacy?.cinematicDescription || "Documented influence in automotive culture.";
 
-            document.getElementById('media-title').innerText = mediaTitle;
-            document.getElementById('media-img').src = mediaImg;
-            
-            if (cinematicDesc && cinematicDesc.length > 5) {
-                document.getElementById('cinematic-main-desc').innerText = cinematicDesc;
-            } else {
-                document.getElementById('cinematic-main-desc').innerText = "Data fragmentation detected. This unit represents a significant cultural milestone.";
-            }
-
-            // 3D Model
-            const container = document.getElementById('viewer-container');
-            const attrContainer = document.getElementById('attribution-container');
-
+            // --- 3D MODEL ---
             if (car.model3D) {
-                container.innerHTML = `
+                const viewerContainer = document.getElementById('viewer-container');
+                viewerContainer.innerHTML = `
                     <model-viewer 
                         src="${car.model3D}" 
                         auto-rotate 
@@ -277,15 +264,18 @@
                         interaction-prompt="none">
                     </model-viewer>`;
                 
+                const attrContainer = document.getElementById('attribution-container');
                 if (car.attribution) {
                     attrContainer.innerHTML = car.attribution;
                     attrContainer.style.display = 'block';
-                } else {
-                    attrContainer.style.display = 'none';
                 }
             }
         }
 
+        // Run on load
+        window.addEventListener('DOMContentLoaded', loadCarData);
+
+        // Sticky Nav Logic
         window.addEventListener('scroll', () => {
             const nav = document.getElementById('navbar');
             if (window.scrollY > window.innerHeight - 100) {
