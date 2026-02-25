@@ -44,7 +44,9 @@
         /* --- HERO SECTION --- */
         .hero {
             height: 100vh; width: 100%; position: relative;
-            background-size: cover; background-position: center;
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden;
         }
@@ -208,8 +210,10 @@
     </footer>
 
     <script>
-        // Data Fetching
-        const carId = typeof localStorage !== 'undefined' ? localStorage.getItem('selected_car_id') : null;
+        // Data Fetching via URL Parameter (matches showroom navigation logic)
+        const urlParams = new URLSearchParams(window.location.search);
+        const carId = urlParams.get('id');
+        
         const db = window.carDatabase || [];
         const car = db.find(c => c.id === carId);
 
@@ -220,10 +224,12 @@
         }
 
         function initViewer() {
-            // Hero
+            // Hero Backdrop Restoration
             if (car.images && car.images.desktop) {
-                document.getElementById('hero-node').style.backgroundImage = `url(${car.images.desktop})`;
+                const heroNode = document.getElementById('hero-node');
+                heroNode.style.backgroundImage = `url('${car.images.desktop}')`;
             }
+            
             document.getElementById('hero-name').innerText = car.name;
             document.getElementById('sticky-name').innerText = car.name;
 
@@ -235,7 +241,6 @@
 
             // Specs
             if (car.specs) {
-                // FIXED: Changed from .split(' ')[0] to show the full engine string
                 document.getElementById('spec-engine').innerText = car.specs.engine || "-";
                 document.getElementById('spec-hp').innerText = car.specs.hp || "-";
                 document.getElementById('spec-speed').innerText = car.specs.topSpeed || "-";
@@ -272,7 +277,6 @@
                         interaction-prompt="none">
                     </model-viewer>`;
                 
-                // Read and set Attribution from dat.js field
                 if (car.attribution) {
                     attrContainer.innerHTML = car.attribution;
                     attrContainer.style.display = 'block';
