@@ -47,6 +47,7 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            pointer-events: none;
         }
 
         #intro-canvas {
@@ -123,8 +124,9 @@
             transition: 0.5s ease;
         }
 
-        /* Motion Blur Focus Logic - Refined to Grid only */
-        #car-grid:hover .car-card {
+        /* Motion Blur Focus Logic - REFINED */
+        /* Only apply the blur to siblings when ONE card is being hovered */
+        #car-grid:has(.car-card:hover) .car-card:not(:hover) {
             filter: blur(15px) grayscale(100%) brightness(0.2);
             transform: scale(0.96);
             opacity: 0.3;
@@ -139,7 +141,8 @@
             position: relative;
         }
 
-        #car-grid .car-card:hover {
+        /* The hovered card stays sharp and expands */
+        .car-card:hover {
             filter: blur(0) grayscale(0%) brightness(1);
             transform: scale(1.05);
             opacity: 1;
@@ -299,38 +302,51 @@
         }, 1500);
 
         /* --- SHOWROOM LOGIC --- */
-        document.addEventListener('DOMContentLoaded', () => {
+        function initShowroom() {
+            const grid = document.getElementById('car-grid');
+            if (!window.carDatabase) return;
+
+            document.getElementById('unit-count').innerText = window.carDatabase.length;
+
+            window.carDatabase.forEach(car => {
+                const card = document.createElement('div');
+                card.className = 'car-card';
+                card.innerHTML = `
+                    <div class="card-img-wrapper">
+                        <img src="${car.images.desktop}" alt="${car.name}" onerror="this.src='https://via.placeholder.com/800x450?text=IMAGE+NOT+FOUND'">
+                    </div>
+                    <div class="card-meta">
+                        <span class="year">${car.year}</span>
+                        <h3 class="sync-font">${car.name}</h3>
+                        <div class="card-stats">
+                            <div class="stat-item"><label>HP</label><span>${car.specs.hp}</span></div>
+                            <div class="stat-item"><label>ENGINE</label><span>${car.specs.engine}</span></div>
+                            <div class="stat-item"><label>TOP</label><span>${car.specs.topSpeed}</span></div>
+                        </div>
+                    </div>
+                `;
+
+                card.onclick = () => {
+                    // Navigate to viewer with URL parameter ID
+                    window.location.href = `showroom_viewer.html?id=${car.id}`;
+                };
+
+                grid.appendChild(card);
+            });
+        }
+
+        // Retry mechanism to ensure dat.js is loaded
+        let attempts = 0;
+        const checkDB = setInterval(() => {
+            attempts++;
             if (window.carDatabase) {
-                const grid = document.getElementById('car-grid');
-                document.getElementById('unit-count').innerText = window.carDatabase.length;
-
-                window.carDatabase.forEach(car => {
-                    const card = document.createElement('div');
-                    card.className = 'car-card';
-                    card.innerHTML = `
-                        <div class="card-img-wrapper">
-                            <img src="${car.images.desktop}" alt="${car.name}">
-                        </div>
-                        <div class="card-meta">
-                            <span class="year">${car.year}</span>
-                            <h3 class="sync-font">${car.name}</h3>
-                            <div class="card-stats">
-                                <div class="stat-item"><label>HP</label><span>${car.specs.hp}</span></div>
-                                <div class="stat-item"><label>ENGINE</label><span>${car.specs.engine.split(' ')[0]}</span></div>
-                                <div class="stat-item"><label>TOP</label><span>${car.specs.topSpeed}</span></div>
-                            </div>
-                        </div>
-                    `;
-
-                    card.onclick = () => {
-                        localStorage.setItem('selected_car_id', car.id);
-                        window.location.href = 'showroom_viewer.html';
-                    };
-
-                    grid.appendChild(card);
-                });
+                clearInterval(checkDB);
+                initShowroom();
+            } else if (attempts > 50) {
+                clearInterval(checkDB);
+                console.error("Database initialization failed.");
             }
-        });
+        }, 100);
     </script>
 </body>
 </html>
