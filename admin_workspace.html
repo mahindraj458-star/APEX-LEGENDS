@@ -148,6 +148,7 @@
             letter-spacing: 2px;
             cursor: pointer;
             transition: 0.3s;
+            margin-top: 10px;
         }
 
         /* --- MAIN WORKSPACE --- */
@@ -305,6 +306,15 @@
             position: relative;
         }
         .ai-image-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* AI SECTION STYLE */
+        .ai-section {
+            padding: 20px 30px;
+            border-top: 1px solid var(--neon-dim);
+            font-size: 0.7rem;
+        }
+        .ai-section h3 { font-size: 0.65rem; color: var(--gemini-purple); margin-bottom: 10px; letter-spacing: 2px; }
+        #ai-insight { color: #fff; font-family: 'JetBrains Mono', monospace; opacity: 0.8; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -327,10 +337,12 @@
                 </button>
             </div>
         </div>
-<section class="ai-section">
-  <h3>AI Analysis</h3>
-  <div id="ai-insight">
-    
+
+        <section class="ai-section">
+            <h3 class="sync-font">AI ANALYSIS</h3>
+            <div id="ai-insight">Awaiting link...</div>
+        </section>
+
         <button class="terminate-btn" onclick="terminateSession()">[!] TERMINATE_SESSION</button>
     </nav>
 
@@ -508,6 +520,7 @@
 
     <div id="notification">SYSTEM_UPDATED</div>
 
+    <script src="nexus_core.js"></script>
     <script>
         const apiKey = ""; // Provided at runtime
 
@@ -519,7 +532,7 @@
             document.getElementById(tabId).classList.add('active');
             
             const btns = document.querySelectorAll('.nav-btn');
-            btns.forEach(b => { if(b.getAttribute('onclick').includes(tabId)) b.classList.add('active'); });
+            btns.forEach(b => { if(b.getAttribute('onclick')?.includes(tabId)) b.classList.add('active'); });
             renderTables();
         }
 
@@ -554,7 +567,6 @@
             throw new Error("API Connection Failure");
         }
 
-        // NEW AI FEATURE: LICENSE FORMATTER
         async function aiFormatLicense() {
             const attrInput = document.getElementById('sr-attribution');
             const carName = document.getElementById('sr-name').value;
@@ -651,7 +663,7 @@
                 });
                 const result = await response.json();
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text.includes("TELEMETRY_VERIFIED")) showNotification("✅ DATA_VERIFIED");
+                if (text?.includes("TELEMETRY_VERIFIED")) showNotification("✅ DATA_VERIFIED");
                 else alert(`AUDIT: ${text}`);
             } catch (err) {
                 showNotification("VERIFICATION_OFFLINE");
@@ -719,18 +731,22 @@
 
         function renderTables() {
             const bTable = document.getElementById('blogger-table-body');
-            document.getElementById('blogger-count').innerText = activeCreators.length;
-            bTable.innerHTML = activeCreators.map(u => `
-                <tr><td style="color:#fff">${u.name}</td><td>${u.date}</td><td style="color:var(--neon-green)">${u.id}</td>
-                <td><button class="btn-delete" onclick="removeCreator('${u.id}')">REVOKE</button></td></tr>
-            `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">NO_OPERATORS_ONLINE</td></tr>`;
+            if (bTable) {
+                document.getElementById('blogger-count').innerText = activeCreators.length;
+                bTable.innerHTML = activeCreators.map(u => `
+                    <tr><td style="color:#fff">${u.name}</td><td>${u.date}</td><td style="color:var(--neon-green)">${u.id}</td>
+                    <td><button class="btn-delete" onclick="removeCreator('${u.id}')">REVOKE</button></td></tr>
+                `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">NO_OPERATORS_ONLINE</td></tr>`;
+            }
 
             const srTable = document.getElementById('sr-table-body');
-            document.getElementById('sr-count').innerText = persistentShowroom.length;
-            srTable.innerHTML = persistentShowroom.map(c => `
-                <tr><td style="color:#fff">${c.name}</td><td>${c.year}</td><td>${c.marketStatus}</td>
-                <td><button class="btn-edit" onclick="editAsset('${c.id}')">EDIT</button><button class="btn-delete" onclick="deleteAsset('${c.id}')">PURGE</button></td></tr>
-            `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">DATABASE_EMPTY</td></tr>`;
+            if (srTable) {
+                document.getElementById('sr-count').innerText = persistentShowroom.length;
+                srTable.innerHTML = persistentShowroom.map(c => `
+                    <tr><td style="color:#fff">${c.name}</td><td>${c.year}</td><td>${c.marketStatus}</td>
+                    <td><button class="btn-edit" onclick="editAsset('${c.id}')">EDIT</button><button class="btn-delete" onclick="deleteAsset('${c.id}')">PURGE</button></td></tr>
+                `).join('') || `<tr><td colspan="4" style="text-align:center; opacity:0.3">DATABASE_EMPTY</td></tr>`;
+            }
         }
 
         function handleShowroomSubmit(e) {
@@ -742,7 +758,7 @@
                 marketStatus: document.getElementById('sr-market').value,
                 year: document.getElementById('sr-year').value,
                 origin: document.getElementById('sr-origin').value,
-                attribution: document.getElementById('sr-attribution').value, // SAVED
+                attribution: document.getElementById('sr-attribution').value,
                 images: {
                     desktop: document.getElementById('sr-img-desk').value,
                     mobile: document.getElementById('sr-img-mob').value
@@ -850,6 +866,6 @@
             renderTables();
             setInterval(checkIncomingRegistrations, 2000);
         };
-   
+    </script>
 </body>
 </html>
