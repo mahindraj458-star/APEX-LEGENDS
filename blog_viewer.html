@@ -57,25 +57,25 @@
         nav {
             position: fixed;
             top: 0; left: 0; width: 100%;
-            padding: 30px 5vw;
+            padding: 25px 5vw;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
             background: linear-gradient(to bottom, rgba(3,3,3,0.9), rgba(3,3,3,0));
         }
-        .logo { font-size: 1.1rem; letter-spacing: 8px; color: #fff; text-decoration: none; font-weight: 700; }
-        .back-link { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--alert); text-decoration: none; letter-spacing: 3px; border: 1px solid var(--alert); padding: 8px 15px; transition: 0.3s; }
-        .back-link:hover { background: var(--alert); color: #fff; }
+        .logo { font-size: 1rem; letter-spacing: 6px; color: #fff; text-decoration: none; font-weight: 700; opacity: 0.8; }
+        .back-link { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--alert); text-decoration: none; letter-spacing: 2px; border: 1px solid rgba(255, 17, 17, 0.4); padding: 6px 12px; transition: 0.3s; }
+        .back-link:hover { background: var(--alert); color: #fff; border-color: var(--alert); }
 
         /* --- HERO SECTION --- */
         .article-hero {
-            height: 80vh;
+            height: 60vh; /* Reduced height for a tighter look */
             width: 100%;
             position: relative;
             display: flex;
             align-items: flex-end;
-            padding: 10vh 8vw;
+            padding: 8vh 8vw;
             overflow: hidden;
         }
         .hero-bg {
@@ -83,7 +83,7 @@
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
         }
-        .hero-bg img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.5) brightness(0.4); }
+        .hero-bg img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(0.7) brightness(0.35); }
         .hero-bg::after {
             content: '';
             position: absolute;
@@ -91,27 +91,36 @@
             background: linear-gradient(to top, var(--bg-color) 0%, transparent 100%);
         }
 
-        .hero-content { max-width: 1200px; z-index: 10; }
-        .category-tag { font-family: 'Syncopate'; font-size: 0.75rem; color: var(--alert); letter-spacing: 5px; margin-bottom: 25px; display: block; }
-        .article-title { font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1.1; margin-bottom: 30px; text-transform: uppercase; letter-spacing: -1px; }
-        .article-meta { font-family: 'Syncopate'; font-size: 0.7rem; color: var(--text-muted); display: flex; gap: 40px; border-top: 1px solid #222; padding-top: 25px; letter-spacing: 2px; }
+        .hero-content { max-width: 1000px; z-index: 10; }
+        .category-tag { font-family: 'Syncopate'; font-size: 0.65rem; color: var(--alert); letter-spacing: 4px; margin-bottom: 15px; display: block; opacity: 0.8; }
+        
+        /* ADJUSTED HEADING SIZE: More editorial, less "poster" style */
+        .article-title { 
+            font-size: clamp(2rem, 4.5vw, 3.2rem); 
+            line-height: 1.2; 
+            margin-bottom: 25px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            color: #fff;
+        }
+        
+        .article-meta { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--text-muted); display: flex; gap: 30px; border-top: 1px solid #1a1a1a; padding-top: 20px; letter-spacing: 2px; }
 
         /* --- ARTICLE CONTENT WRAPPER --- */
         .article-wrapper {
             max-width: 1000px;
             margin: 0 auto;
-            padding: 80px 5vw;
+            padding: 60px 5vw;
             position: relative;
         }
 
         /* --- COLLAPSIBLE SECTIONS (ACCORDION) --- */
         .article-section {
             border-bottom: 1px solid #1a1a1a;
-            margin-bottom: 0;
         }
         .section-header {
             width: 100%;
-            padding: 40px 0;
+            padding: 35px 0;
             background: none;
             border: none;
             display: flex;
@@ -124,91 +133,90 @@
         }
         .section-header h2 {
             font-family: 'Syncopate';
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             letter-spacing: 3px;
             margin: 0;
             display: flex;
             align-items: center;
+            color: #eee;
         }
         .section-header h2::before {
             content: '';
-            width: 15px; height: 1px;
+            width: 12px; height: 1px;
             background: var(--alert);
-            margin-right: 15px;
+            margin-right: 12px;
         }
         .section-icon {
             font-family: 'Syncopate';
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: var(--alert);
-            transition: 0.4s transform;
+            transition: 0.4s transform cubic-bezier(0.16, 1, 0.3, 1);
         }
         .section-header.active .section-icon { transform: rotate(45deg); }
 
         .section-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            background: rgba(255,255,255,0.01);
+            transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .section-content.open { max-height: 5000px; padding-bottom: 40px; }
 
-        /* --- LIST PANELS --- */
+        /* --- LIST PANELS (CLEANER, NON-HIGHLIGHTED TEXT) --- */
         .list-panel {
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            padding: 25px 35px;
-            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 2px solid var(--alert);
+            padding: 18px 25px;
+            margin: 15px 0;
             display: flex;
-            align-items: center;
-            gap: 20px;
+            align-items: flex-start;
+            gap: 15px;
             font-family: var(--sans-font);
-            font-size: 0.95rem;
-            color: #ccc;
-            border-left: 3px solid var(--alert);
+            font-size: 0.9rem;
+            color: #999; /* Muted color for points */
+            line-height: 1.6;
         }
         .list-panel::before {
-            content: '>';
+            content: '•';
             color: var(--alert);
             font-weight: bold;
-            font-family: 'Syncopate';
         }
 
         .article-body p { 
-            margin-bottom: 30px; 
-            font-size: 1.25rem; 
-            color: #bbb;
-            text-align: justify;
+            margin-bottom: 25px; 
+            font-size: 1.15rem; 
+            color: #aaa;
+            text-align: left;
         }
 
         /* --- AI FLOATER --- */
         .ai-status {
             position: sticky;
-            top: 150px;
+            top: 120px;
             float: right;
-            width: 280px;
-            margin-right: -320px;
-            padding: 25px;
+            width: 260px;
+            margin-right: -300px;
+            padding: 20px;
             background: var(--glass);
-            border: 1px solid #222;
-            backdrop-filter: blur(15px);
+            border: 1px solid #1a1a1a;
+            backdrop-filter: blur(10px);
             z-index: 50;
         }
-        .ai-status h4 { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--alert); margin-bottom: 15px; letter-spacing: 2px; }
-        #ai-insight { font-family: var(--sans-font); font-size: 0.8rem; color: #888; line-height: 1.6; }
+        .ai-status h4 { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--alert); margin-bottom: 12px; letter-spacing: 2px; }
+        #ai-insight { font-family: var(--sans-font); font-size: 0.75rem; color: #777; line-height: 1.5; font-style: italic; }
 
         /* --- FOOTER --- */
-        footer { padding: 100px 8vw; background: #000; text-align: center; }
+        footer { padding: 80px 8vw; background: #000; text-align: center; border-top: 1px solid #0a0a0a; }
         .next-card {
             display: block;
-            max-width: 800px;
-            margin: 40px auto;
+            max-width: 600px;
+            margin: 30px auto;
             text-decoration: none;
-            padding: 60px;
+            padding: 40px;
             border: 1px solid #111;
             transition: 0.4s;
         }
-        .next-card:hover { border-color: var(--alert); }
-        .next-card h4 { font-family: 'Syncopate'; font-size: 1.5rem; color: #fff; }
+        .next-card:hover { border-color: rgba(255, 17, 17, 0.5); background: #050505; }
+        .next-card h4 { font-family: 'Syncopate'; font-size: 1.1rem; color: #fff; letter-spacing: 2px; }
 
         @media (max-width: 1400px) {
             .ai-status { position: relative; float: none; margin: 0 auto 40px; width: 100%; right: 0; }
@@ -227,7 +235,7 @@
     <div id="article-root"></div>
 
     <footer>
-        <div class="sync-font" style="font-size: 0.7rem; color: var(--alert); letter-spacing: 5px;">CONTINUE_CHRONICLE</div>
+        <div class="sync-font" style="font-size: 0.6rem; color: var(--alert); letter-spacing: 4px; opacity: 0.6;">CONTINUE_CHRONICLE</div>
         <div id="next-article-container"></div>
     </footer>
 
@@ -248,18 +256,14 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `One cold futuristic sentence about: "${title}". Max 15 words.` }] }]
+                        contents: [{ parts: [{ text: `A cryptic, short futuristic observation about: "${title}". Max 12 words.` }] }]
                     })
                 });
                 const data = await response.json();
-                target.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No pattern detected.";
+                target.innerText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Neural silence.";
             } catch (e) { target.innerText = "Connection lost."; }
         }
 
-        /**
-         * Parses content into sections. 
-         * Headings create new accordion blocks.
-         */
         function formatContent(raw) {
             if (!raw) return "";
             const lines = raw.split('\n');
@@ -270,13 +274,12 @@
                 const trimmed = line.trim();
                 if (!trimmed) return;
 
-                // Detect Heading (Short, no period, or uppercase)
-                const isHeading = (trimmed.length < 60 && !trimmed.includes('.') && trimmed === trimmed.toUpperCase()) || (trimmed.length < 50 && !trimmed.includes('.') && trimmed.split(' ').length < 8);
+                // Identify Headings (Uppercase or short lines without end punctuation)
+                const isHeading = (trimmed.length < 60 && !trimmed.includes('.') && trimmed === trimmed.toUpperCase()) || 
+                                 (trimmed.length < 50 && !trimmed.includes('.') && !trimmed.includes(','));
 
                 if (isHeading) {
-                    if (sectionOpen) {
-                        html += `</div></div>`; // Close previous section
-                    }
+                    if (sectionOpen) html += `</div></div>`;
                     html += `
                         <div class="article-section">
                             <button class="section-header" onclick="toggleSection(this)">
@@ -287,7 +290,7 @@
                     `;
                     sectionOpen = true;
                 } else if (trimmed.startsWith('-')) {
-                    html += `<div class="list-panel">${trimmed.replace('-', '').trim()}</div>`;
+                    html += `<div class="list-panel">${trimmed.replace(/^-/, '').trim()}</div>`;
                 } else {
                     html += `<p>${trimmed}</p>`;
                 }
@@ -301,7 +304,6 @@
             btn.classList.toggle('active');
             const content = btn.nextElementSibling;
             content.classList.toggle('open');
-            // Change icon
             const icon = btn.querySelector('.section-icon');
             icon.innerText = btn.classList.contains('active') ? '×' : '+';
         }
@@ -317,11 +319,11 @@
                     <section class="article-hero">
                         <div class="hero-bg"><img src="${post.image}"></div>
                         <div class="hero-content">
-                            <span class="category-tag sync-font">ENTRY // ${post.id}</span>
+                            <span class="category-tag sync-font">CHRONICLE // ${post.id}</span>
                             <h1 class="article-title sync-font">${post.title}</h1>
                             <div class="article-meta">
-                                <span>DATE: ${post.date}</span>
-                                <span style="color:var(--alert)">// DECLASSIFIED</span>
+                                <span>PUBLISHED: ${post.date}</span>
+                                <span style="color:var(--alert)">STATUS: DECLASSIFIED</span>
                             </div>
                         </div>
                     </section>
@@ -329,7 +331,7 @@
                     <div class="article-wrapper">
                         <aside class="ai-status">
                             <h4 class="sync-font">NEXUS_INSIGHT</h4>
-                            <p id="ai-insight">Connecting...</p>
+                            <p id="ai-insight">Processing...</p>
                         </aside>
                         <main class="article-body">
                             ${formatContent(post.content)}
@@ -337,7 +339,6 @@
                     </div>
                 `;
 
-                // Set next post link
                 const idx = posts.indexOf(post);
                 const nextPost = posts[(idx + 1) % posts.length];
                 document.getElementById('next-article-container').innerHTML = `
@@ -349,11 +350,11 @@
                 fetchInsight(post.title);
                 document.title = `APEX // ${post.title}`;
 
-                // Auto-open first section
+                // Auto-open first section for a better UX
                 setTimeout(() => {
                     const firstHeader = document.querySelector('.section-header');
                     if (firstHeader) toggleSection(firstHeader);
-                }, 500);
+                }, 400);
             }
         });
     </script>
