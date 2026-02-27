@@ -21,7 +21,6 @@
             --text-main: #e0e0e0;
             --text-muted: #666;
             --sidebar-width: 320px;
-            --gemini-purple: #8e44ad;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -101,7 +100,6 @@
         .nav-btn.active { color: var(--neon-green); background: rgba(0, 255, 65, 0.1); }
         .nav-btn.active::before { transform: scaleY(1); }
 
-        /* EXPORT CENTER */
         .export-section {
             margin-top: auto;
             padding: 20px 30px;
@@ -235,25 +233,6 @@
 
         .btn-edit:hover { background: var(--neon-green); color: #000; }
 
-        /* AI TOOLS */
-        .ai-btn {
-            background: var(--gemini-purple);
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.65rem;
-            cursor: pointer;
-            border-radius: 2px;
-            margin-left: 10px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: 0.2s;
-        }
-        .ai-btn:hover { filter: brightness(1.2); transform: translateY(-1px); }
-        .ai-btn:disabled { background: #444; cursor: not-allowed; }
-
         /* FORM STYLES */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { margin-bottom: 20px; position: relative; }
@@ -264,17 +243,6 @@
         .form-section-header::after { content: ''; flex: 1; height: 1px; background: #222; }
         .btn-submit { grid-column: 1 / -1; background: var(--neon-green); color: #000; border: none; padding: 20px; font-family: 'Syncopate', sans-serif; font-size: 0.9rem; letter-spacing: 4px; cursor: pointer; transition: 0.3s; margin-top: 20px; }
         .btn-cancel { grid-column: 1 / -1; background: #222; color: #fff; border: none; padding: 10px; font-family: 'Syncopate', sans-serif; font-size: 0.7rem; cursor: pointer; margin-top: 5px; display: none; }
-
-        /* LOADING SPINNER */
-        .spinner {
-            width: 14px; height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.8s linear infinite;
-            display: none;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
         #notification {
             position: fixed;
@@ -292,29 +260,19 @@
 
         #notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        /* AI IMAGE PREVIEW */
-        .ai-image-preview {
+        .image-preview-container {
             width: 100%;
-            height: 200px;
+            height: 150px;
             background: #111;
-            border: 1px dashed #333;
+            border: 1px solid #222;
             margin-top: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            position: relative;
+            border-radius: 4px;
         }
-        .ai-image-preview img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* AI SECTION STYLE */
-        .ai-section {
-            padding: 20px 30px;
-            border-top: 1px solid var(--neon-dim);
-            font-size: 0.7rem;
-        }
-        .ai-section h3 { font-size: 0.65rem; color: var(--gemini-purple); margin-bottom: 10px; letter-spacing: 2px; }
-        #ai-insight { color: #fff; font-family: 'JetBrains Mono', monospace; opacity: 0.8; line-height: 1.4; }
+        .image-preview-container img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -322,7 +280,7 @@
     <nav id="sidebar">
         <div class="brand-header">
             <h1 class="sync-font">APEX</h1>
-            <p>OVERSEER_TERMINAL v6.5 ✨AI</p>
+            <p>OVERSEER_TERMINAL v6.5</p>
         </div>
 
         <button class="nav-btn active" onclick="switchTab('tab-bloggers')">[01] MANAGE_BLOGGERS</button>
@@ -337,11 +295,6 @@
                 </button>
             </div>
         </div>
-
-        <section class="ai-section">
-            <h3 class="sync-font">AI ANALYSIS</h3>
-            <div id="ai-insight">Awaiting link...</div>
-        </section>
 
         <button class="terminate-btn" onclick="terminateSession()">[!] TERMINATE_SESSION</button>
     </nav>
@@ -386,10 +339,6 @@
         <section id="tab-showroom" class="tab-content">
             <div class="section-title">
                 <span class="sync-font" id="form-header">SHOWROOM_ASSET_INJECTION</span>
-                <button class="ai-btn" onclick="verifyTelemetryData()" id="btn-verify-ai">
-                    <span class="spinner" id="spinner-verify"></span>
-                    ✨ VERIFY TELEMETRY
-                </button>
             </div>
             
             <form id="showroom-form" onsubmit="handleShowroomSubmit(event)">
@@ -434,15 +383,8 @@
                         <input type="text" id="sr-model" placeholder="Spline/ThreeJS Hash or URL">
                     </div>
                     
-                    <!-- NEW ATTRIBUTION SECTION -->
                     <div class="form-group">
-                        <label>
-                            3D_ASSET_ATTRIBUTION (CREDITS)
-                            <button type="button" class="ai-btn" onclick="aiFormatLicense()" id="btn-license-ai">
-                                <span class="spinner" id="spinner-license"></span>
-                                ✨ AI FORMAT LICENSE
-                            </button>
-                        </label>
+                        <label>3D_ASSET_ATTRIBUTION (CREDITS)</label>
                         <input type="text" id="sr-attribution" placeholder='e.g. "Car" by Artist is licensed under CC-BY'>
                     </div>
 
@@ -472,24 +414,12 @@
                         <textarea id="sr-special-reason" required placeholder="Key differentiator..."></textarea>
                     </div>
                     <div class="form-group full-width">
-                        <label>
-                            CORE NARRATIVE (HISTORY) 
-                            <button type="button" class="ai-btn" onclick="aiWeaveNarrative()" id="btn-weave-ai">
-                                <span class="spinner" id="spinner-weave"></span>
-                                ✨ AI WEAVE NARRATIVE
-                            </button>
-                        </label>
-                        <textarea id="sr-story" required placeholder="Type facts here, then click AI Weave..."></textarea>
+                        <label>CORE NARRATIVE (HISTORY)</label>
+                        <textarea id="sr-story" required placeholder="Historical context and narrative..."></textarea>
                     </div>
                     
                     <div class="form-group full-width">
-                        <label>
-                            CINEMATIC DESCRIPTION (SCENE_SCRIPT)
-                            <button type="button" class="ai-btn" onclick="aiWeaveCinematic()" id="btn-cin-ai">
-                                <span class="spinner" id="spinner-cin"></span>
-                                ✨ AI SCENE SCRIPT
-                            </button>
-                        </label>
+                        <label>CINEMATIC DESCRIPTION (SCENE_SCRIPT)</label>
                         <textarea id="sr-cin-desc" placeholder="Describe the scene setup, lighting, and camera movement..."></textarea>
                     </div>
 
@@ -498,17 +428,8 @@
                         <input type="text" id="sr-movies" placeholder="e.g. James Bond">
                     </div>
                     <div class="form-group">
-                        <label>
-                            CINEMATIC ASSET URL (MOVIE STILL)
-                            <button type="button" class="ai-btn" onclick="aiGenerateConcept()" id="btn-gen-ai">
-                                <span class="spinner" id="spinner-gen"></span>
-                                ✨ GEN CINEMATIC ART
-                            </button>
-                        </label>
+                        <label>CINEMATIC ASSET URL (MOVIE STILL)</label>
                         <input type="url" id="sr-movie-img" placeholder="https://...">
-                        <div class="ai-image-preview" id="ai-preview-box">
-                            <span id="ai-preview-text" style="color:#333; font-size: 0.6rem;">NO_AI_PREVIEW_GENERATED</span>
-                        </div>
                     </div>
 
                     <button type="submit" id="submit-btn" class="btn-submit">INJECT_ASSET_TO_DATABASE</button>
@@ -520,10 +441,8 @@
 
     <div id="notification">SYSTEM_UPDATED</div>
 
-    <script src="nexus_core.js"></script>
     <script>
-        const apiKey = ""; // Provided at runtime
-
+        // Data management logic
         let activeCreators = JSON.parse(localStorage.getItem('apex_authorized_creators')) || [];
         let persistentShowroom = JSON.parse(localStorage.getItem('apex_persistent_showroom')) || [];
 
@@ -532,7 +451,10 @@
             document.getElementById(tabId).classList.add('active');
             
             const btns = document.querySelectorAll('.nav-btn');
-            btns.forEach(b => { if(b.getAttribute('onclick')?.includes(tabId)) b.classList.add('active'); });
+            btns.forEach(b => { 
+                const attr = b.getAttribute('onclick');
+                if(attr && attr.includes(tabId)) b.classList.add('active'); 
+            });
             renderTables();
         }
 
@@ -541,192 +463,6 @@
             notif.innerText = msg;
             notif.classList.add('show');
             setTimeout(() => notif.classList.remove('show'), 3000);
-        }
-
-        async function callGemini(prompt, systemInstruction = "You are a specialized automotive archive AI assistant.") {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemInstruction }] }
-            };
-
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    if (!response.ok) throw new Error('API Error');
-                    const result = await response.json();
-                    return result.candidates?.[0]?.content?.parts?.[0]?.text;
-                } catch (err) {
-                    await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
-                }
-            }
-            throw new Error("API Connection Failure");
-        }
-
-        async function aiFormatLicense() {
-            const attrInput = document.getElementById('sr-attribution');
-            const carName = document.getElementById('sr-name').value;
-            const input = attrInput.value.trim();
-
-            if (!input && !carName) return showNotification("INPUT_REQUIRED");
-
-            const btn = document.getElementById('btn-license-ai');
-            const spinner = document.getElementById('spinner-license');
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-
-            try {
-                const prompt = `Convert this raw info or URL into a standard Sketchfab attribution string: "${input || carName}". Format: "Title" (URL) by Author is licensed under Creative Commons [Type] (URL). If some info is missing, use placeholders but keep the professional structure.`;
-                const result = await callGemini(prompt, "You are a legal and licensing assistant specialized in Creative Commons and digital assets.");
-                attrInput.value = result.replace(/\"/g, '"');
-                showNotification("LICENSE_FORMATTED");
-            } catch (err) {
-                showNotification("AI_LICENSE_OFFLINE");
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-
-        async function aiWeaveNarrative() {
-            const storyArea = document.getElementById('sr-story');
-            const carName = document.getElementById('sr-name').value;
-            const input = storyArea.value.trim();
-            if (!input || !carName) return showNotification("INPUT_REQUIRED");
-
-            const btn = document.getElementById('btn-weave-ai');
-            const spinner = document.getElementById('spinner-weave');
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-
-            try {
-                const prompt = `Write a cinematic, high-end automotive narrative for the ${carName}. Use these facts: ${input}. Focus on speed and legacy. 150-250 words.`;
-                const result = await callGemini(prompt, "You are a professional automotive journalist.");
-                storyArea.value = result;
-                showNotification("NARRATIVE_WOVEN");
-            } catch (err) {
-                showNotification("AI_FAILURE");
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-
-        async function aiWeaveCinematic() {
-            const cinArea = document.getElementById('sr-cin-desc');
-            const carName = document.getElementById('sr-name').value;
-            if (!carName) return showNotification("UNIT_NAME_REQUIRED");
-
-            const btn = document.getElementById('btn-cin-ai');
-            const spinner = document.getElementById('spinner-cin');
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-
-            try {
-                const prompt = `Generate a cinematic technical scene description for the ${carName}. Describe lighting (neon/dramatic), camera movements (low-angle tracking), and environment.`;
-                const result = await callGemini(prompt, "You are a professional automotive director.");
-                cinArea.value = result;
-                showNotification("SCENE_SCRIPT_READY");
-            } catch (err) {
-                showNotification("AI_OFFLINE");
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-
-        async function verifyTelemetryData() {
-            const carName = document.getElementById('sr-name').value;
-            const engine = document.getElementById('sr-engine').value;
-            const hp = document.getElementById('sr-hp').value;
-            if (!carName) return showNotification("UNIT_NAME_REQUIRED");
-
-            const btn = document.getElementById('btn-verify-ai');
-            const spinner = document.getElementById('spinner-verify');
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-
-            try {
-                const prompt = `Verify the specs for ${carName}: ${engine}, ${hp}. Respond with "TELEMETRY_VERIFIED" or corrected data.`;
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        tools: [{ "google_search": {} }]
-                    })
-                });
-                const result = await response.json();
-                const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (text?.includes("TELEMETRY_VERIFIED")) showNotification("✅ DATA_VERIFIED");
-                else alert(`AUDIT: ${text}`);
-            } catch (err) {
-                showNotification("VERIFICATION_OFFLINE");
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-
-        async function aiGenerateConcept() {
-            const carName = document.getElementById('sr-name').value;
-            const cinDesc = document.getElementById('sr-cin-desc').value;
-            if (!carName) return showNotification("UNIT_NAME_REQUIRED");
-
-            const btn = document.getElementById('btn-gen-ai');
-            const spinner = document.getElementById('spinner-gen');
-            const previewBox = document.getElementById('ai-preview-box');
-            
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-            previewBox.innerHTML = '<span style="color:var(--neon-green)">GENERATING_VISUAL...</span>';
-
-            try {
-                const promptText = `Cinematic 8k movie still, ${carName}. ${cinDesc.substring(0, 100)}. Dramatic lighting, moody atmosphere.`;
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        instances: { prompt: promptText },
-                        parameters: { sampleCount: 1 }
-                    })
-                });
-                const result = await response.json();
-                const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
-                previewBox.innerHTML = `<img src="${imageUrl}" alt="AI Concept">`;
-                document.getElementById('sr-movie-img').value = imageUrl;
-                showNotification("CINEMATIC_ART_READY");
-            } catch (err) {
-                previewBox.innerHTML = '<span style="color:var(--alert-red)">GEN_FAILED</span>';
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        }
-
-        function checkIncomingRegistrations() {
-            const latestEventRaw = localStorage.getItem('latest_creator_event');
-            if (latestEventRaw) {
-                const event = JSON.parse(latestEventRaw);
-                if (event.action === 'REGISTRATION' || event.action === 'LOGIN') {
-                    if (!activeCreators.find(c => c.name === event.user)) {
-                        activeCreators.push({
-                            name: event.user,
-                            date: new Date(event.timestamp).toLocaleDateString(),
-                            id: "AUTH-" + Math.random().toString(36).substr(2, 6).toUpperCase()
-                        });
-                        localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
-                    }
-                }
-                localStorage.removeItem('latest_creator_event');
-                renderTables();
-            }
         }
 
         function renderTables() {
@@ -781,7 +517,7 @@
 
             if(editId) {
                 const index = persistentShowroom.findIndex(c => c.id === editId);
-                persistentShowroom[index] = carData;
+                if(index !== -1) persistentShowroom[index] = carData;
             } else {
                 persistentShowroom.push(carData);
             }
@@ -827,7 +563,6 @@
             document.getElementById('form-header').innerText = "SHOWROOM_ASSET_INJECTION";
             document.getElementById('submit-btn').innerText = "INJECT_ASSET_TO_DATABASE";
             document.getElementById('cancel-btn').style.display = "none";
-            document.getElementById('ai-preview-box').innerHTML = '<span id="ai-preview-text" style="color:#333; font-size: 0.6rem;">NO_AI_PREVIEW_GENERATED</span>';
         }
 
         function deleteAsset(id) {
@@ -859,7 +594,26 @@
         }
 
         function terminateSession() {
-            if(confirm("TERMINATE_SESSION?")) window.location.href = "index.html";
+            if(confirm("TERMINATE_SESSION?")) window.location.reload();
+        }
+
+        function checkIncomingRegistrations() {
+            const latestEventRaw = localStorage.getItem('latest_creator_event');
+            if (latestEventRaw) {
+                const event = JSON.parse(latestEventRaw);
+                if (event.action === 'REGISTRATION' || event.action === 'LOGIN') {
+                    if (!activeCreators.find(c => c.name === event.user)) {
+                        activeCreators.push({
+                            name: event.user,
+                            date: new Date(event.timestamp).toLocaleDateString(),
+                            id: "AUTH-" + Math.random().toString(36).substr(2, 6).toUpperCase()
+                        });
+                        localStorage.setItem('apex_authorized_creators', JSON.stringify(activeCreators));
+                    }
+                }
+                localStorage.removeItem('latest_creator_event');
+                renderTables();
+            }
         }
 
         window.onload = () => {
