@@ -5,7 +5,7 @@
  */
 
 // API Configuration
-const apiKey = ""; // Set by environment at runtime
+const apiKey = "AIzaSyCXVsSmwJPIpaurBKkq1m_qVbs3z4zbb2Y"; // Set by environment at runtime
 const MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
 
 /**
