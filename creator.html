@@ -462,9 +462,7 @@
         }
 
         function terminateSession() {
-            if(confirm("TERMINATE_SESSION? ALL LOCAL CACHE WILL BE WIPED.")) {
-                localStorage.removeItem('apex_local_drafts');
-                location.reload();
+            if(confirm("TERMINATE_SESSION?")) window.location.href = "index.html";
             }
         }
     </script>
