@@ -13,6 +13,7 @@
             --accent: #ff1111;
             --sidebar-w: 260px;
             --panel: #0a0a0a;
+            --border: #1a1a1a;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +23,7 @@
         .sidebar {
             width: var(--sidebar-w);
             background: var(--panel);
-            border-right: 1px solid #1a1a1a;
+            border-right: 1px solid var(--border);
             padding: 40px 20px;
             display: flex;
             flex-direction: column;
@@ -30,7 +31,7 @@
 
         .sidebar-right {
             border-right: none;
-            border-left: 1px solid #1a1a1a;
+            border-left: 1px solid var(--border);
             background: #000;
         }
 
@@ -74,7 +75,8 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .editor-container { background: var(--panel); border: 1px solid #1a1a1a; padding: 40px; }
+        .editor-container { background: var(--panel); border: 1px solid var(--border); padding: 40px; }
+        
         input, textarea {
             width: 100%;
             background: #000;
@@ -87,15 +89,42 @@
         }
         input:focus, textarea:focus { border-color: var(--accent); }
 
+        /* Block System */
+        .content-blocks { margin-top: 20px; }
+        .block-item {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.6rem;
+            color: #444;
+            font-family: 'Syncopate';
+        }
+        .block-tools {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #080808;
+            border: 1px dashed #222;
+        }
+
         /* Image URL Preview Styling */
         .url-preview-zone {
             border: 1px solid #222;
             background: #000;
             padding: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             text-align: center;
         }
-        .preview-img { max-width: 100%; max-height: 200px; margin-top: 10px; display: none; border: 1px solid #222; }
+        .preview-img { max-width: 100%; max-height: 200px; margin-top: 10px; border: 1px solid #222; display: block; margin-left: auto; margin-right: auto; }
 
         .btn-action {
             background: var(--accent);
@@ -106,16 +135,20 @@
             font-size: 0.7rem;
             cursor: pointer;
         }
-
-        .stat-card { background: #111; padding: 20px; margin-bottom: 10px; border: 1px solid #1a1a1a; }
-        .stat-card b { color: var(--accent); }
-
-        #download-bar {
-            margin-top: auto;
-            padding: 20px;
-            background: #111;
-            text-align: center;
+        
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            padding: 8px 15px;
+            font-family: 'Syncopate';
+            font-size: 0.6rem;
+            cursor: pointer;
         }
+        .btn-secondary:hover { color: #fff; border-color: #666; }
+
+        .stat-card { background: #111; padding: 20px; margin-bottom: 10px; border: 1px solid var(--border); }
+        .stat-card b { color: var(--accent); }
 
         .action-btn {
             background: transparent;
@@ -130,7 +163,6 @@
         .action-btn:hover { color: #fff; border-color: #666; }
         .action-btn.delete:hover { color: var(--accent); border-color: var(--accent); }
 
-        /* Hidden File Input */
         #file-import { display: none; }
     </style>
 </head>
@@ -144,17 +176,15 @@
         <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
         
         <div style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;">
-            <label for="file-import" class="nav-terminate" style="display: block; cursor: pointer; color: #888; border-color: #333;">IMPORT_EXISTING_DATA</label>
+            <label for="file-import" class="nav-terminate" style="display: block; cursor: pointer; color: #888; border-color: #333;">IMPORT_DATA</label>
             <input type="file" id="file-import" accept=".js" onchange="importData(event)">
         </div>
 
-        <!-- Terminate Session Button -->
         <div class="nav-terminate" onclick="terminateSession()">TERMINATE_SESSION</div>
     </div>
 
     <!-- MAIN WORKSPACE -->
     <main class="workspace">
-        <!-- Subscribers Tab -->
         <div id="subscribers" class="tab-content active">
             <h2 class="sb-header">REAL_TIME_STATISTICS</h2>
             <div class="stat-card">UNIQUE_TRAFFIC_HITS: <b id="stat-views">0</b></div>
@@ -165,7 +195,6 @@
             </div>
         </div>
 
-        <!-- Create/Edit Tab -->
         <div id="create" class="tab-content">
             <h2 class="sb-header" id="editor-mode-label">INITIALIZE_POST</h2>
             <div class="editor-container">
@@ -173,21 +202,30 @@
                 <input type="text" id="post-title" placeholder="POST_TITLE">
                 
                 <div class="url-preview-zone">
-                    <input type="text" id="post-image-url" placeholder="IMAGE_URL (e.g. from Postimages.org)" oninput="handleUrlPreview(this.value)">
-                    <img id="img-preview" class="preview-img" alt="URL_PREVIEW">
+                    <div style="font-size: 0.6rem; color: #444; margin-bottom: 10px; text-align: left;">MAIN_COVER_IMAGE</div>
+                    <input type="text" id="post-image-url" placeholder="COVER_IMAGE_URL" oninput="handleUrlPreview(this.value, 'img-preview')">
+                    <img id="img-preview" class="preview-img" style="display:none;" alt="COVER_PREVIEW">
                 </div>
 
-                <textarea id="post-excerpt" rows="3" placeholder="SHORT_EXCERPT"></textarea>
-                <textarea id="post-content" rows="10" placeholder="FULL_CONTENT_MARKDOWN"></textarea>
+                <textarea id="post-excerpt" rows="2" placeholder="SHORT_EXCERPT"></textarea>
                 
-                <div style="display:flex; gap:15px;">
+                <div class="sb-header" style="margin: 30px 0 10px 0;">DYNAMIC_CONTENT_BLOCKS</div>
+                <div class="block-tools">
+                    <button class="btn-secondary" onclick="addBlock('text')">+ ADD_TEXT_BLOCK</button>
+                    <button class="btn-secondary" onclick="addBlock('image')">+ ADD_IMAGE_BLOCK</button>
+                </div>
+
+                <div id="blocks-container" class="content-blocks">
+                    <!-- Blocks injected here -->
+                </div>
+                
+                <div style="display:flex; gap:15px; margin-top: 40px; border-top: 1px solid #222; padding-top: 30px;">
                     <button id="main-save-btn" class="btn-action" onclick="saveBlog()">PUSH_TO_DRAFT</button>
                     <button id="cancel-edit-btn" class="btn-action" style="background:#222; display:none;" onclick="cancelEdit()">CANCEL_EDIT</button>
                 </div>
             </div>
         </div>
 
-        <!-- Edit/List Tab -->
         <div id="edit" class="tab-content">
             <h2 class="sb-header">LOCAL_DRAFTS_ARCHIVE</h2>
             <div id="draft-list">
@@ -196,11 +234,11 @@
         </div>
     </main>
 
-    <!-- RIGHT SIDEBAR (DOWNLOAD JS) -->
+    <!-- RIGHT SIDEBAR -->
     <div class="sidebar sidebar-right">
         <div class="sb-header">DATA_EXPORT</div>
         <p style="font-size:0.6rem; color:#444; line-height:1.5;">GENERATE 'blog_data.js' TO UPDATE LIVE VIEWERS PAGE.</p>
-        <div id="download-bar">
+        <div id="download-bar" style="margin-top: auto; padding: 20px; background: #111; text-align: center;">
             <button class="btn-action" style="width:100%;" onclick="downloadData()">DOWNLOAD.JS</button>
         </div>
     </div>
@@ -208,6 +246,7 @@
     <script>
         let drafts = JSON.parse(localStorage.getItem('apex_local_drafts') || '[]');
         let isEditing = false;
+        let contentBlocks = [];
 
         window.onload = () => {
             loadLiveStats();
@@ -222,122 +261,106 @@
             const stats = JSON.parse(localStorage.getItem('apex_blog_stats') || '{"views":0, "clicks":[]}');
             document.getElementById('stat-views').innerText = stats.views;
             document.getElementById('stat-clicks').innerText = stats.clicks.length;
-
-            const activityLog = document.getElementById('recent-activity');
-            if (stats.clicks.length > 0) {
-                const recent = stats.clicks.slice(-5).reverse();
-                let html = '<h2 class="sb-header" style="margin-top:40px;">RECENT_ACTIVITY_LOG</h2>';
-                recent.forEach(act => {
-                    html += `<div class="stat-card">USER_OPENED: <b>${act.title}</b> <br><small style="color:#333">${new Date(act.time).toLocaleTimeString()}</small></div>`;
-                });
-                activityLog.innerHTML = html;
-            }
         }
-
-        function terminateSession() {
-            if(confirm("CONFIRM_SESSION_TERMINATION? ALL LOCAL DRAFTS WILL BE PURGED.")) {
-                localStorage.removeItem('apex_local_drafts');
-                location.href = 'blog.html';
-            }
-        }
-
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                try {
-                    // Extract the JSON from the "window.blogPosts = [...]" string
-                    const jsonStr = content.substring(content.indexOf('=') + 1, content.lastIndexOf(';')).trim();
-                    const importedDrafts = JSON.parse(jsonStr);
-                    
-                    if (Array.isArray(importedDrafts)) {
-                        if (confirm(`IMPORT ${importedDrafts.length} POSTS? THIS WILL MERGE WITH CURRENT DRAFTS.`)) {
-                            // Merge and prevent duplicates based on ID or Title
-                            importedDrafts.forEach(imp => {
-                                if (!drafts.find(d => d.id === imp.id || d.title === imp.title)) {
-                                    drafts.push(imp);
-                                }
-                            });
-                            saveDraftsToStorage();
-                            updateDraftList();
-                            alert("DATA_SYNCHRONIZED_SUCCESSFULLY");
-                        }
-                    }
-                } catch (err) {
-                    alert("ERR: INVALID_FILE_FORMAT. PLEASE UPLOAD A VALID 'blog_data.js'");
-                    console.error(err);
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        setInterval(loadLiveStats, 5000);
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if (tabId === 'subscribers') loadLiveStats();
-            if (tabId === 'edit') updateDraftList();
+            if(event) event.currentTarget.classList.add('active');
         }
 
-        function handleUrlPreview(url) {
-            const preview = document.getElementById('img-preview');
+        function addBlock(type, value = '') {
+            const blockId = Date.now() + Math.random();
+            const block = { id: blockId, type: type, value: value };
+            contentBlocks.push(block);
+            renderBlocks();
+        }
+
+        function removeBlock(id) {
+            contentBlocks = contentBlocks.filter(b => b.id !== id);
+            renderBlocks();
+        }
+
+        function updateBlockValue(id, value) {
+            const block = contentBlocks.find(b => b.id === id);
+            if (block) block.value = value;
+            if (block.type === 'image') {
+                handleUrlPreview(value, `preview-${id}`);
+            }
+        }
+
+        function renderBlocks() {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = '';
+
+            contentBlocks.forEach((block, index) => {
+                const div = document.createElement('div');
+                div.className = 'block-item';
+                
+                let inputHtml = '';
+                if (block.type === 'text') {
+                    inputHtml = `<textarea placeholder="WRITE_PARAGRAPH..." oninput="updateBlockValue(${block.id}, this.value)">${block.value}</textarea>`;
+                } else {
+                    inputHtml = `
+                        <input type="text" placeholder="IMAGE_URL" value="${block.value}" oninput="updateBlockValue(${block.id}, this.value)">
+                        <div class="url-preview-zone">
+                            <img id="preview-${block.id}" src="${block.value}" class="preview-img" style="${block.value ? 'display:block' : 'display:none'}" onerror="this.style.display='none'">
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="block-header">
+                        <span>BLOCK_0${index + 1} // ${block.type.toUpperCase()}</span>
+                        <button class="action-btn delete" onclick="removeBlock(${block.id})">REMOVE</button>
+                    </div>
+                    ${inputHtml}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function handleUrlPreview(url, elementId) {
+            const img = document.getElementById(elementId);
+            if (!img) return;
             if (url && url.trim() !== '') {
-                preview.src = url;
-                preview.style.display = 'block';
-                preview.onerror = () => {
-                    preview.style.display = 'none';
-                };
+                img.src = url;
+                img.style.display = 'block';
             } else {
-                preview.style.display = 'none';
+                img.style.display = 'none';
             }
         }
 
         function saveBlog() {
             const idInput = document.getElementById('post-id').value;
             const title = document.getElementById('post-title').value;
-            const imageUrl = document.getElementById('post-image-url').value;
+            const coverImage = document.getElementById('post-image-url').value;
             const excerpt = document.getElementById('post-excerpt').value;
-            const content = document.getElementById('post-content').value;
             
-            if(!title) {
-                alert("ERR: TITLE_REQUIRED");
-                return;
-            }
+            if(!title) return alert("ERR: TITLE_REQUIRED");
 
-            if (isEditing && idInput) {
-                const index = drafts.findIndex(d => d.id == idInput);
-                if (index !== -1) {
-                    drafts[index] = {
-                        ...drafts[index],
-                        title,
-                        image: imageUrl,
-                        excerpt,
-                        content,
-                        lastModified: new Date().toLocaleDateString()
-                    };
-                }
+            const postData = {
+                id: isEditing ? parseInt(idInput) : Date.now(),
+                title,
+                image: coverImage,
+                excerpt,
+                blocks: [...contentBlocks], // Saving structured blocks
+                date: isEditing ? drafts.find(d => d.id == idInput).date : new Date().toLocaleDateString(),
+                lastModified: new Date().toLocaleDateString()
+            };
+
+            if (isEditing) {
+                const idx = drafts.findIndex(d => d.id == idInput);
+                drafts[idx] = postData;
             } else {
-                const post = {
-                    id: Date.now(),
-                    title,
-                    excerpt,
-                    content,
-                    image: imageUrl,
-                    date: new Date().toLocaleDateString()
-                };
-                drafts.push(post);
+                drafts.push(postData);
             }
 
             saveDraftsToStorage();
             updateDraftList();
             cancelEdit();
-            alert(isEditing ? "ARCHIVE_UPDATED" : "POST_SAVED_TO_LOCAL_MEMORY");
+            alert("POST_SYNCHRONIZED_TO_STORAGE");
         }
 
         function startEditing(id) {
@@ -353,9 +376,11 @@
             document.getElementById('post-title').value = draft.title;
             document.getElementById('post-image-url').value = draft.image;
             document.getElementById('post-excerpt').value = draft.excerpt;
-            document.getElementById('post-content').value = draft.content;
             
-            handleUrlPreview(draft.image);
+            contentBlocks = draft.blocks ? [...draft.blocks] : [{id: Date.now(), type: 'text', value: draft.content || ''}];
+            
+            handleUrlPreview(draft.image, 'img-preview');
+            renderBlocks();
             switchTab('create');
         }
 
@@ -364,21 +389,13 @@
             document.getElementById('editor-mode-label').innerText = "INITIALIZE_POST";
             document.getElementById('main-save-btn').innerText = "PUSH_TO_DRAFT";
             document.getElementById('cancel-edit-btn').style.display = "none";
-            
             document.getElementById('post-id').value = '';
             document.getElementById('post-title').value = '';
             document.getElementById('post-image-url').value = '';
             document.getElementById('post-excerpt').value = '';
-            document.getElementById('post-content').value = '';
             document.getElementById('img-preview').style.display = 'none';
-        }
-
-        function deleteDraft(id) {
-            if(confirm("DELETE_DRAFT?")) {
-                drafts = drafts.filter(d => d.id !== id);
-                saveDraftsToStorage();
-                updateDraftList();
-            }
+            contentBlocks = [];
+            renderBlocks();
         }
 
         function updateDraftList() {
@@ -390,13 +407,13 @@
             list.innerHTML = drafts.map(d => `
                 <div class="stat-card" style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:center; gap:15px;">
-                        ${d.image ? `<img src="${d.image}" style="width:40px; height:40px; object-fit:cover; border:1px solid #333;" onerror="this.src='https://via.placeholder.com/40?text=ERR'">` : ''}
+                        <img src="${d.image || ''}" style="width:40px; height:40px; object-fit:cover; border:1px solid #333;" onerror="this.src='https://via.placeholder.com/40?text=NA'">
                         <div>
                             <div style="font-size:0.8rem;">${d.title}</div>
                             <div style="font-size:0.6rem; color:#444;">${d.date}</div>
                         </div>
                     </div>
-                    <div style="display:flex; gap:10px; align-items:center;">
+                    <div style="display:flex; gap:10px;">
                         <button class="action-btn" onclick="startEditing(${d.id})">EDIT</button>
                         <button class="action-btn delete" onclick="deleteDraft(${d.id})">PURGE</button>
                     </div>
@@ -404,20 +421,51 @@
             `).join('');
         }
 
-        function downloadData() {
-            if(drafts.length === 0) {
-                alert("NO_DATA_TO_EXPORT");
-                return;
+        function deleteDraft(id) {
+            if(confirm("PURGE_DRAFT?")) {
+                drafts = drafts.filter(d => d.id !== id);
+                saveDraftsToStorage();
+                updateDraftList();
             }
+        }
+
+        function downloadData() {
+            if(drafts.length === 0) return alert("NO_DATA_TO_EXPORT");
             const dataStr = "window.blogPosts = " + JSON.stringify(drafts, null, 2) + ";";
             const blob = new Blob([dataStr], { type: 'text/javascript' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = "blog_data.js";
-            document.body.appendChild(a);
             a.click();
-            document.body.removeChild(a);
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const jsonStr = content.substring(content.indexOf('=') + 1, content.lastIndexOf(';')).trim();
+                    const imported = JSON.parse(jsonStr);
+                    if (confirm(`MERGE ${imported.length} POSTS?`)) {
+                        imported.forEach(imp => {
+                            if (!drafts.find(d => d.id === imp.id)) drafts.push(imp);
+                        });
+                        saveDraftsToStorage();
+                        updateDraftList();
+                    }
+                } catch (err) { alert("INVALID_JS_FILE"); }
+            };
+            reader.readAsText(file);
+        }
+
+        function terminateSession() {
+            if(confirm("TERMINATE_SESSION? ALL LOCAL CACHE WILL BE WIPED.")) {
+                localStorage.removeItem('apex_local_drafts');
+                location.reload();
+            }
         }
     </script>
 </body>
