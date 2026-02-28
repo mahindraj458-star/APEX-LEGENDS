@@ -3,269 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Garage // Sunlight Protocol</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>APEX GARAGE | CLOUD EDITION</title>
     <style>
-        :root { --accent: #00f2ff; --sun: #fff7e6; }
-        body { margin: 0; overflow: hidden; background: #000; color: #fff; font-family: 'Inter', sans-serif; }
-        .font-mono { font-family: 'Syncopate', sans-serif; }
-        canvas { display: block; }
-        .ui-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
-        .interactive { pointer-events: auto; }
-        .glass { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .sun-bloom { box-shadow: 0 0 60px 20px rgba(255, 247, 230, 0.2); }
+        :root {
+            --neon-blue: #00f2ff;
+            --dark-bg: #050505;
+            --glass: rgba(10, 10, 10, 0.85);
+        }
+        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            background: var(--glass);
+            border-left: 3px solid var(--neon-blue);
+            padding: 20px;
+            pointer-events: auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* Top Bar */
+        .header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .logo h1 { margin: 0; font-size: 24px; letter-spacing: 5px; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+        .logo p { margin: 0; font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+
+        /* Stats HUD */
+        .stats-hud { width: 200px; }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
+        .stat-val { color: var(--neon-blue); font-weight: bold; }
+
+        /* Garage Inventory (Cloud) */
+        .inventory-panel {
+            width: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .inventory-panel h3 { margin: 0 0 15px 0; font-size: 14px; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .car-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+        .car-item:hover { background: rgba(0, 242, 255, 0.1); border-color: var(--neon-blue); }
+        .car-item.active { border-color: var(--neon-blue); background: rgba(0, 242, 255, 0.2); }
+        .car-item div { font-size: 11px; opacity: 0.7; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        button {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        button:hover { background: var(--neon-blue); color: black; box-shadow: 0 0 20px var(--neon-blue); }
+        
+        #terminal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+        #terminal-box { width: 80%; max-width: 600px; background: #111; padding: 20px; border: 1px solid var(--neon-blue); }
+        textarea { width: 100%; height: 200px; background: #000; color: #0f0; border: 1px solid #333; font-family: monospace; padding: 10px; box-sizing: border-box; resize: none; }
+        
+        #loading-screen {
+            position: fixed; top:0; left:0; width:100%; height:100%; background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .spinner { width: 50px; height: 50px; border: 3px solid #111; border-top-color: var(--neon-blue); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="ui-overlay flex flex-col justify-between p-8 md:p-12">
-        <div class="flex justify-between items-start interactive">
-            <div>
-                <h1 class="text-[10px] font-mono font-bold tracking-[0.5em] text-[#00f2ff]">EXTREME_LUMEN // V.6.0</h1>
-                <div class="text-[8px] tracking-[0.2em] text-yellow-400 mt-2 flex items-center gap-2 font-mono">
-                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-ping"></span>
-                    DIRECT_SUNLIGHT_EXPOSURE_ACTIVE
-                </div>
-            </div>
-            
-            <div class="flex gap-4">
-                <button id="fetch-trigger" class="glass px-6 py-4 rounded text-[9px] font-mono uppercase tracking-widest hover:bg-white/10 transition interactive text-white">Refresh_Lighing</button>
-                <button id="view-drive" class="bg-white text-black px-10 py-4 rounded text-[9px] font-mono font-bold uppercase tracking-widest hover:scale-105 transition shadow-2xl interactive">Ignition</button>
-            </div>
+<div id="loading-screen">
+    <div class="spinner"></div>
+    <p style="margin-top: 20px; letter-spacing: 5px; color: var(--neon-blue);">INITIALIZING GARAGE</p>
+</div>
+
+<div id="terminal-overlay">
+    <div id="terminal-box">
+        <h2 style="color: var(--neon-blue); margin-top:0;">IMPORT APEX MODEL</h2>
+        <p style="font-size: 12px; opacity: 0.7;">Paste the Base64 data from your car's HTML (the long string inside atob("..."))</p>
+        <input type="text" id="car-name-input" placeholder="Vehicle Name (e.g. Tata Nano)" style="width:100%; margin-bottom:10px; padding:8px; background:#000; border:1px solid #333; color:white;">
+        <input type="number" id="car-hp-input" placeholder="Horsepower (HP)" style="width:100%; margin-bottom:10px; padding:8px; background:#000; border:1px solid #333; color:white;">
+        <textarea id="car-data-input" placeholder="Paste Base64 data here..."></textarea>
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button onclick="saveImport()">UPLOAD TO CLOUD</button>
+            <button onclick="toggleTerminal(false)" style="border-color: #ff4444; color: #ff4444;">CANCEL</button>
         </div>
+    </div>
+</div>
 
-        <div class="flex justify-between items-end">
-            <div id="spec-panel" class="w-96 interactive opacity-0 translate-y-4 transition-all duration-700">
-                <div class="glass p-8 rounded-2xl border-l-4 border-l-yellow-400 sun-bloom">
-                    <div class="mb-10">
-                        <span class="text-[8px] text-yellow-400 font-mono uppercase tracking-[0.3em]">Sun-Calibrated Specs</span>
-                        <h2 id="active-name" class="font-mono text-2xl tracking-tighter uppercase leading-tight mt-2 text-white">---</h2>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-8 mb-8">
-                        <div>
-                            <div class="text-[8px] font-mono uppercase text-gray-400 mb-1">Max_Velocity</div>
-                            <div id="calc-top-speed" class="text-xl font-mono text-white">000 <span class="text-[10px] text-yellow-500">MPH</span></div>
-                        </div>
-                        <div>
-                            <div class="text-[8px] font-mono uppercase text-gray-400 mb-1">HP_Calculated</div>
-                            <div id="val-hp" class="text-xl font-mono text-white">0 <span class="text-[10px] text-yellow-500">HP</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="drive-hud" class="hidden flex flex-col items-center interactive mb-8 mr-8">
-                <div class="glass w-48 h-48 rounded-full flex items-center justify-center relative border-b-4 border-yellow-400">
-                    <div class="text-center">
-                        <div id="speed-val" class="text-5xl font-mono tracking-tighter text-white">000</div>
-                        <div class="text-[8px] font-mono text-yellow-400 tracking-[0.3em] mt-1">MPH</div>
-                    </div>
-                </div>
-                <div class="mt-6 flex flex-col items-center gap-2">
-                    <div class="text-[8px] font-mono text-white/50 tracking-widest">WASD_DRIVE_PROTOCOL</div>
-                    <button id="exit-drive" class="text-[8px] font-mono text-gray-400 hover:text-white uppercase tracking-widest mt-2">PARK_VEHICLE</button>
-                </div>
-            </div>
+<div id="ui-layer">
+    <div class="header">
+        <div class="panel logo">
+            <h1>APEX : GARAGE</h1>
+            <p id="user-display">Connecting to network...</p>
+        </div>
+        <div class="panel stats-hud">
+            <div class="stat-row"><span>STATUS</span> <span class="stat-val" id="engine-status">OFF</span></div>
+            <div class="stat-row"><span>SPEED</span> <span class="stat-val" id="speed-display">0 MPH</span></div>
+            <div class="stat-row"><span>MAX POWER</span> <span class="stat-val" id="hp-display">0 HP</span></div>
         </div>
     </div>
 
-    <div id="canvas-container"></div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+        <div class="panel inventory-panel">
+            <h3>STORED MODELS</h3>
+            <div id="car-list">
+                <!-- Cars from Firestore populating here -->
+                <p style="font-size: 10px; opacity: 0.5;">Loading cloud data...</p>
+            </div>
+            <button onclick="toggleTerminal(true)" style="width: 100%; margin-top: 10px; font-size: 10px;">+ IMPORT NEW</button>
+        </div>
 
-    <script>
-        let scene, camera, renderer, vehicleGroup, wheels = [];
-        let activeCar = null, isDriving = false, currentSpeedMPH = 0, keys = {};
+        <div class="controls">
+            <button id="ignite-btn">Ignition</button>
+        </div>
+    </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- CONFIG & INIT ---
+    const firebaseConfig = JSON.parse(__firebase_config);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'apex-garage-v1';
+
+    let user = null;
+    let currentCar = null;
+    let activeCarData = null;
+    let scene, camera, renderer, loader;
+    let engineRunning = false;
+    let speed = 0;
+    let targetSpeed = 0;
+    let hp = 0;
+
+    // --- THREE.JS SETUP ---
+    function initThree() {
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x050505);
+        scene.fog = new THREE.Fog(0x050505, 10, 50);
+
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 3, 10);
+        camera.lookAt(0, 1, 0);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.toneMappingExposure = 2.0;
+        document.body.appendChild(renderer.domElement);
+
+        // Sunlight Protocol
+        const sun = new THREE.DirectionalLight(0xffffff, 4);
+        sun.position.set(5, 10, 5);
+        scene.add(sun);
+
+        const ambient = new THREE.AmbientLight(0x404040, 1);
+        scene.add(ambient);
+
+        // Floor
+        const grid = new THREE.GridHelper(100, 100, 0x00f2ff, 0x222222);
+        scene.add(grid);
+
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.1, metalness: 0.5 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        loader = new THREE.GLTFLoader();
+        animate();
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
         
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a1a1a); // Lighter background for sun bounce
-            scene.fog = new THREE.Fog(0x1a1a1a, 20, 100);
-
-            camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.toneMapping = THREE.ReinhardToneMapping;
-            renderer.toneMappingExposure = 1.2;
-            document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-            // --- INTENSE SUNLIGHT RIG ---
-            // Main Sun
-            const sunLight = new THREE.DirectionalLight(0xfff7e6, 5.0); 
-            sunLight.position.set(10, 50, 10);
-            sunLight.castShadow = true;
-            sunLight.shadow.mapSize.width = 4096;
-            sunLight.shadow.mapSize.height = 4096;
-            sunLight.shadow.camera.left = -20;
-            sunLight.shadow.camera.right = 20;
-            sunLight.shadow.camera.top = 20;
-            sunLight.shadow.camera.bottom = -20;
-            scene.add(sunLight);
-
-            // Fill Light (Sky)
-            const skyLight = new THREE.HemisphereLight(0xadd8e6, 0x444444, 2.0); 
-            scene.add(skyLight);
-
-            // Overhead High-Intensity Spot (The "Sun Core")
-            const topSpot = new THREE.PointLight(0xffffff, 4, 30);
-            topSpot.position.set(0, 15, 0);
-            scene.add(topSpot);
-
-            // Ground Floor (Polished Chrome Finish)
-            const floorGeo = new THREE.PlaneGeometry(2000, 2000);
-            const floorMat = new THREE.MeshStandardMaterial({ 
-                color: 0x222222, 
-                roughness: 0.1, 
-                metalness: 0.9 
-            });
-            const floor = new THREE.Mesh(floorGeo, floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            scene.add(floor);
-
-            const grid = new THREE.GridHelper(200, 100, 0x333333, 0x222222);
-            grid.position.y = 0.01;
-            scene.add(grid);
-
-            // Initial asset load
-            setTimeout(fetchData, 500);
-            animate();
-        }
-
-        async function fetchData() {
-            const carData = {
-                name: "HELIOS INTERCEPTOR",
-                hp: 1450,
-                color: 0xffffff // White body to catch maximum sunlight
-            };
-            activateCar(carData);
-        }
-
-        function activateCar(data) {
-            activeCar = data;
-            if (vehicleGroup) scene.remove(vehicleGroup);
-            
-            vehicleGroup = new THREE.Group();
-            
-            // High Gloss Paint
-            const paintMat = new THREE.MeshStandardMaterial({ 
-                color: data.color, 
-                metalness: 1.0, 
-                roughness: 0.0,
-                envMapIntensity: 2.0
-            });
-            
-            // Aerodynamic Body
-            const body = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.4, 4.8), paintMat);
-            body.position.y = 0.6;
-            body.castShadow = true;
-            body.receiveShadow = true;
-            vehicleGroup.add(body);
-
-            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.0), paintMat);
-            cabin.position.set(0, 1.0, -0.3);
-            cabin.castShadow = true;
-            vehicleGroup.add(cabin);
-
-            // Chrome Details
-            const chromeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0 });
-            const spoiler = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.1, 0.6), chromeMat);
-            spoiler.position.set(0, 1.0, 2.2);
-            vehicleGroup.add(spoiler);
-
-            // Wheels
-            const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.4, 32);
-            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
-            const wheelPos = [[-1.2, 0.45, 1.7], [1.2, 0.45, 1.7], [-1.2, 0.45, -1.7], [1.2, 0.45, -1.7]];
-            
-            wheels = [];
-            wheelPos.forEach(p => {
-                const w = new THREE.Mesh(wheelGeo, wheelMat);
-                w.rotation.z = Math.PI / 2;
-                w.position.set(p[0], p[1], p[2]);
-                w.castShadow = true;
-                vehicleGroup.add(w);
-                wheels.push(w);
-            });
-
-            scene.add(vehicleGroup);
-
-            // FORMULA: MPH = 20 * (HP ^ 1/3)
-            const topSpeedMPH = Math.round(20 * Math.pow(data.hp, 1/3));
-            activeCar.topSpeedLimit = topSpeedMPH;
-
-            // UI Refresh
-            const panel = document.getElementById('spec-panel');
-            panel.style.opacity = "1";
-            panel.style.transform = "translateY(0)";
-            document.getElementById('active-name').innerText = data.name;
-            document.getElementById('val-hp').innerHTML = `${data.hp} <span class="text-[10px] text-yellow-500">HP</span>`;
-            document.getElementById('calc-top-speed').innerHTML = `${topSpeedMPH} <span class="text-[10px] text-yellow-500">MPH</span>`;
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            if (!isDriving) {
-                if (vehicleGroup) vehicleGroup.rotation.y += 0.005;
-                camera.position.lerp(new THREE.Vector3(10, 6, 10), 0.05);
-                camera.lookAt(0, 0.8, 0);
-            } else if (activeCar) {
-                const topSpeed = activeCar.topSpeedLimit;
-                const accel = (topSpeed / 100) * 0.5;
-                
-                if (keys.w) currentSpeedMPH += accel;
-                else if (keys.s) currentSpeedMPH -= accel * 2;
-                else currentSpeedMPH *= 0.99;
-
-                currentSpeedMPH = Math.max(0, Math.min(topSpeed, currentSpeedMPH));
-                
-                if (keys.a) vehicleGroup.rotation.y += 0.04;
-                if (keys.d) vehicleGroup.rotation.y -= 0.04;
-
-                // Move car based on speed
-                const moveStep = currentSpeedMPH * 0.006;
-                vehicleGroup.translateZ(moveStep);
-                wheels.forEach(w => w.rotation.x += moveStep * 4);
-
-                // Chase Cam
-                const camOffset = new THREE.Vector3(0, 3, -12).applyMatrix4(vehicleGroup.matrixWorld);
-                camera.position.lerp(camOffset, 0.1);
-                camera.lookAt(vehicleGroup.position.x, vehicleGroup.position.y + 1, vehicleGroup.position.z);
-                
-                document.getElementById('speed-val').innerText = Math.round(currentSpeedMPH).toString().padStart(3, '0');
+        if (engineRunning) {
+            speed = THREE.MathUtils.lerp(speed, targetSpeed, 0.05);
+            if (currentCar) {
+                currentCar.position.z -= speed * 0.01;
+                // Camera follow
+                camera.position.z = currentCar.position.z + 10;
+                camera.lookAt(currentCar.position.x, 1, currentCar.position.z);
             }
-            renderer.render(scene, camera);
         }
-
-        document.getElementById('fetch-trigger').onclick = () => location.reload();
-        document.getElementById('view-drive').onclick = () => {
-            if (!activeCar) return;
-            isDriving = true;
-            document.getElementById('spec-panel').style.opacity = "0";
-            document.getElementById('drive-hud').classList.remove('hidden');
-        };
-        document.getElementById('exit-drive').onclick = () => {
-            isDriving = false; currentSpeedMPH = 0;
-            vehicleGroup.position.set(0,0,0);
-            document.getElementById('drive-hud').classList.add('hidden');
-            document.getElementById('spec-panel').style.opacity = "1";
-        };
-
-        window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-        window.onresize = () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        };
         
-        init();
-    </script>
+        document.getElementById('speed-display').innerText = Math.round(speed) + " MPH";
+        renderer.render(scene, camera);
+    }
+
+    // --- CAR MANAGEMENT ---
+    async function loadCarModel(base64Data, carHp) {
+        if (currentCar) scene.remove(currentCar);
+        
+        hp = carHp;
+        document.getElementById('hp-display').innerText = hp + " HP";
+        
+        // Convert base64 to blob for GLTFLoader
+        const binary = atob(base64Data);
+        const array = new Uint8Array(binary.length);
+        for(let i=0; i<binary.length; i++) array[i] = binary.charCodeAt(i);
+        const blob = new Blob([array], { type: 'model/gltf-binary' });
+        const url = URL.createObjectURL(blob);
+
+        loader.load(url, (gltf) => {
+            currentCar = gltf.scene;
+            scene.add(currentCar);
+            document.getElementById('loading-screen').style.display = 'none';
+        });
+    }
+
+    // --- FIREBASE LOGIC ---
+    const initAuth = async () => {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+            await signInAnonymously(auth);
+        }
+    };
+
+    onAuthStateChanged(auth, (u) => {
+        user = u;
+        if (user) {
+            document.getElementById('user-display').innerText = "CLOUD ACTIVE: " + user.uid.substring(0,8);
+            setupFirestoreListeners();
+        }
+    });
+
+    function setupFirestoreListeners() {
+        if (!user) return;
+        
+        // Path: /artifacts/{appId}/public/data/vehicles
+        const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'));
+        
+        onSnapshot(q, (snapshot) => {
+            const listDiv = document.getElementById('car-list');
+            listDiv.innerHTML = '';
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const item = document.createElement('div');
+                item.className = 'car-item';
+                item.innerHTML = `
+                    <strong>${data.name}</strong>
+                    <div>${data.hp} HP | V.ID: ${doc.id.substring(0,5)}</div>
+                `;
+                item.onclick = () => {
+                    loadCarModel(data.modelData, data.hp);
+                    document.querySelectorAll('.car-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                };
+                listDiv.appendChild(item);
+            });
+
+            // Load first car automatically if none active
+            if (snapshot.docs.length > 0 && !currentCar) {
+                const first = snapshot.docs[0].data();
+                loadCarModel(first.modelData, first.hp);
+            } else if (snapshot.docs.length === 0) {
+                document.getElementById('loading-screen').style.display = 'none';
+                listDiv.innerHTML = '<p style="font-size:10px; opacity:0.5;">No cars in cloud. Import one!</p>';
+            }
+        }, (err) => console.error("Firestore Error:", err));
+    }
+
+    window.saveImport = async () => {
+        const name = document.getElementById('car-name-input').value;
+        const hpVal = parseInt(document.getElementById('car-hp-input').value);
+        const data = document.getElementById('car-data-input').value;
+
+        if (!name || !hpVal || !data) return alert("Fill all fields");
+
+        try {
+            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'vehicles'), {
+                name: name,
+                hp: hpVal,
+                modelData: data,
+                createdBy: user.uid,
+                timestamp: Date.now()
+            });
+            toggleTerminal(false);
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    // --- UI CONTROLS ---
+    window.toggleTerminal = (show) => {
+        document.getElementById('terminal-overlay').style.display = show ? 'flex' : 'none';
+    };
+
+    document.getElementById('ignite-btn').addEventListener('click', () => {
+        engineRunning = !engineRunning;
+        document.getElementById('engine-status').innerText = engineRunning ? "ON" : "OFF";
+        document.getElementById('engine-status').style.color = engineRunning ? "#00f2ff" : "#ff4444";
+        if(!engineRunning) targetSpeed = 0;
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (!engineRunning) return;
+        const maxSpeed = 20 * Math.pow(hp, 1/3);
+        if (e.key.toLowerCase() === 'w') targetSpeed = maxSpeed;
+        if (e.key.toLowerCase() === 's') targetSpeed = 0;
+    });
+
+    // Start
+    initThree();
+    initAuth();
+
+</script>
 </body>
 </html>
