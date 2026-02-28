@@ -3,331 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Garage | Procedural Asset Synthesis</title>
+    <title>Apex Garage // Sunlight Protocol</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; overflow: hidden; background: #020202; color: #fff; font-family: 'Inter', sans-serif; }
-        .font-brand { font-family: 'Orbitron', sans-serif; }
+        :root { --accent: #00f2ff; --sun: #fff7e6; }
+        body { margin: 0; overflow: hidden; background: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'Syncopate', sans-serif; }
         canvas { display: block; }
         .ui-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 10; }
         .interactive { pointer-events: auto; }
-        .glass { background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        
-        .status-flicker {
-            animation: flicker 3s infinite;
-        }
-        @keyframes flicker {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        .stat-bar { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
-        .stat-progress { height: 100%; background: #ef4444; transition: width 0.4s ease-out; }
+        .glass { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .sun-bloom { box-shadow: 0 0 60px 20px rgba(255, 247, 230, 0.2); }
     </style>
 </head>
 <body>
 
-    <div class="ui-overlay flex flex-col justify-between p-8">
-        <!-- Header -->
+    <div class="ui-overlay flex flex-col justify-between p-8 md:p-12">
         <div class="flex justify-between items-start interactive">
             <div>
-                <h1 class="text-3xl font-brand font-black italic tracking-tighter text-white">APEX<span class="text-red-600">GEN</span></h1>
-                <div class="text-[10px] tracking-[0.3em] text-red-500 font-bold status-flicker">AUTO-SYNTHESIS ACTIVE</div>
+                <h1 class="text-[10px] font-mono font-bold tracking-[0.5em] text-[#00f2ff]">EXTREME_LUMEN // V.6.0</h1>
+                <div class="text-[8px] tracking-[0.2em] text-yellow-400 mt-2 flex items-center gap-2 font-mono">
+                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-ping"></span>
+                    DIRECT_SUNLIGHT_EXPOSURE_ACTIVE
+                </div>
             </div>
             
             <div class="flex gap-4">
-                <button id="open-inventory" class="glass px-6 py-3 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition interactive">Change Node</button>
-                <button id="view-drive" class="bg-red-600 px-6 py-3 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 transition shadow-lg shadow-red-900/40 interactive">Test Drive</button>
+                <button id="fetch-trigger" class="glass px-6 py-4 rounded text-[9px] font-mono uppercase tracking-widest hover:bg-white/10 transition interactive text-white">Refresh_Lighing</button>
+                <button id="view-drive" class="bg-white text-black px-10 py-4 rounded text-[9px] font-mono font-bold uppercase tracking-widest hover:scale-105 transition shadow-2xl interactive">Ignition</button>
             </div>
         </div>
 
-        <!-- Telemetry & Specs -->
         <div class="flex justify-between items-end">
-            <div id="spec-panel" class="w-80 interactive">
-                <div class="glass p-6 rounded-lg border-l-4 border-l-red-600">
-                    <div class="mb-6">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
-                            <span id="active-model-class" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">NO_DATA_FOUND</span>
-                        </div>
-                        <h2 id="active-model-name" class="font-brand text-2xl italic uppercase leading-none">GENERATING...</h2>
+            <div id="spec-panel" class="w-96 interactive opacity-0 translate-y-4 transition-all duration-700">
+                <div class="glass p-8 rounded-2xl border-l-4 border-l-yellow-400 sun-bloom">
+                    <div class="mb-10">
+                        <span class="text-[8px] text-yellow-400 font-mono uppercase tracking-[0.3em]">Sun-Calibrated Specs</span>
+                        <h2 id="active-name" class="font-mono text-2xl tracking-tighter uppercase leading-tight mt-2 text-white">---</h2>
                     </div>
                     
-                    <div class="space-y-5">
+                    <div class="grid grid-cols-2 gap-8 mb-8">
                         <div>
-                            <div class="flex justify-between text-[9px] uppercase mb-1 font-bold text-gray-400">
-                                <span>Engine Output (Hard Cap)</span>
-                                <span id="val-perf-1" class="text-white">---</span>
-                            </div>
-                            <div class="stat-bar"><div id="bar-perf-1" class="stat-progress" style="width: 0%"></div></div>
+                            <div class="text-[8px] font-mono uppercase text-gray-400 mb-1">Max_Velocity</div>
+                            <div id="calc-top-speed" class="text-xl font-mono text-white">000 <span class="text-[10px] text-yellow-500">MPH</span></div>
                         </div>
                         <div>
-                            <div class="flex justify-between text-[9px] uppercase mb-1 font-bold text-gray-400">
-                                <span>Aero Coefficient</span>
-                                <span id="val-perf-2" class="text-white">---</span>
-                            </div>
-                            <div class="stat-bar"><div id="bar-perf-2" class="stat-progress" style="width: 0%"></div></div>
+                            <div class="text-[8px] font-mono uppercase text-gray-400 mb-1">HP_Calculated</div>
+                            <div id="val-hp" class="text-xl font-mono text-white">0 <span class="text-[10px] text-yellow-500">HP</span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Dashboard -->
-            <div id="drive-stats" class="hidden flex flex-col items-center interactive">
-                <div class="relative w-48 h-48 flex items-center justify-center glass rounded-full overflow-hidden">
-                    <svg class="absolute inset-0 w-full h-full -rotate-90">
-                        <circle cx="50%" cy="50%" r="45%" stroke="rgba(255,255,255,0.05)" stroke-width="8" fill="none" />
-                        <circle id="speedometer-ring" cx="50%" cy="50%" r="45%" stroke="#ef4444" stroke-width="8" fill="none" stroke-dasharray="283" stroke-dashoffset="283" style="transition: stroke-dashoffset 0.1s linear;" />
-                    </svg>
-                    <div class="text-center z-10">
-                        <div id="speed-val" class="text-5xl font-brand italic">000</div>
-                        <div class="text-[8px] font-bold text-red-500 tracking-widest">ACTUAL KM/H</div>
+            <div id="drive-hud" class="hidden flex flex-col items-center interactive mb-8 mr-8">
+                <div class="glass w-48 h-48 rounded-full flex items-center justify-center relative border-b-4 border-yellow-400">
+                    <div class="text-center">
+                        <div id="speed-val" class="text-5xl font-mono tracking-tighter text-white">000</div>
+                        <div class="text-[8px] font-mono text-yellow-400 tracking-[0.3em] mt-1">MPH</div>
                     </div>
                 </div>
-                <button id="exit-drive" class="mt-4 text-[9px] text-gray-500 font-bold uppercase hover:text-white transition">Exit Simulator</button>
+                <div class="mt-6 flex flex-col items-center gap-2">
+                    <div class="text-[8px] font-mono text-white/50 tracking-widest">WASD_DRIVE_PROTOCOL</div>
+                    <button id="exit-drive" class="text-[8px] font-mono text-gray-400 hover:text-white uppercase tracking-widest mt-2">PARK_VEHICLE</button>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Inventory Overlay -->
-    <div id="inventory-modal" class="fixed inset-0 z-50 flex items-center justify-center p-12 bg-black/98 opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="w-full max-w-6xl">
-            <h2 class="font-brand text-3xl mb-12 border-b border-white/10 pb-6 italic">SELECT CORE FREQUENCY</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="dynamic-grid"></div>
         </div>
     </div>
 
     <div id="canvas-container"></div>
 
     <script>
-        // MASTER DATA SPECS
-        const VEHICLE_SYSTEM_DATA = {
-            'X_INTERCEPT': {
-                name: 'X-INTERCEPTOR',
-                class: 'S-TIER HYPER',
-                maxVelocity: 425, // PEAK ENGINE OUTPUT
-                handling: 0.98,
-                color: 0xffffff,
-                aero: 'AGGRESSIVE',
-                scale: [2.1, 0.45, 5.2]
-            },
-            'VELOX_V8': {
-                name: 'VELOX V8',
-                class: 'STREET RACER',
-                maxVelocity: 310, // PEAK ENGINE OUTPUT
-                handling: 0.75,
-                color: 0xff3300,
-                aero: 'BALANCED',
-                scale: [1.9, 0.55, 4.6]
-            },
-            'GOLIATH_01': {
-                name: 'GOLIATH-01',
-                class: 'HEAVY ARMOR',
-                maxVelocity: 240, // PEAK ENGINE OUTPUT
-                handling: 0.50,
-                color: 0x444444,
-                aero: 'BRUTE',
-                scale: [2.4, 0.75, 5.5]
-            }
-        };
-
-        let scene, camera, renderer, vehicleGroup, currentId = 'X_INTERCEPT';
-        let isDriving = false, velocity = 0, keys = {};
-
+        let scene, camera, renderer, vehicleGroup, wheels = [];
+        let activeCar = null, isDriving = false, currentSpeedMPH = 0, keys = {};
+        
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x020202);
+            scene.background = new THREE.Color(0x1a1a1a); // Lighter background for sun bounce
+            scene.fog = new THREE.Fog(0x1a1a1a, 20, 100);
 
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.toneMappingExposure = 1.2;
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // Lighting Rig
-            const lights = [[10,10,10, 1], [-10,10,10, 0.5], [0,10,-10, 0.8]];
-            lights.forEach(l => {
-                const p = new THREE.DirectionalLight(0xffffff, l[3]);
-                p.position.set(l[0], l[1], l[2]);
-                scene.add(p);
-            });
-            scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+            // --- INTENSE SUNLIGHT RIG ---
+            // Main Sun
+            const sunLight = new THREE.DirectionalLight(0xfff7e6, 5.0); 
+            sunLight.position.set(10, 50, 10);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 4096;
+            sunLight.shadow.mapSize.height = 4096;
+            sunLight.shadow.camera.left = -20;
+            sunLight.shadow.camera.right = 20;
+            sunLight.shadow.camera.top = 20;
+            sunLight.shadow.camera.bottom = -20;
+            scene.add(sunLight);
 
-            // Grid Floor
-            const grid = new THREE.GridHelper(400, 80, 0x111111, 0x080808);
+            // Fill Light (Sky)
+            const skyLight = new THREE.HemisphereLight(0xadd8e6, 0x444444, 2.0); 
+            scene.add(skyLight);
+
+            // Overhead High-Intensity Spot (The "Sun Core")
+            const topSpot = new THREE.PointLight(0xffffff, 4, 30);
+            topSpot.position.set(0, 15, 0);
+            scene.add(topSpot);
+
+            // Ground Floor (Polished Chrome Finish)
+            const floorGeo = new THREE.PlaneGeometry(2000, 2000);
+            const floorMat = new THREE.MeshStandardMaterial({ 
+                color: 0x222222, 
+                roughness: 0.1, 
+                metalness: 0.9 
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            const grid = new THREE.GridHelper(200, 100, 0x333333, 0x222222);
+            grid.position.y = 0.01;
             scene.add(grid);
 
-            generateInventory();
-            synthesizeVehicle(currentId);
+            // Initial asset load
+            setTimeout(fetchData, 500);
             animate();
         }
 
-        // PROCEDURAL GEOMETRY SYNTHESIS (Used when no model data is found)
-        function synthesizeVehicle(id) {
+        async function fetchData() {
+            const carData = {
+                name: "HELIOS INTERCEPTOR",
+                hp: 1450,
+                color: 0xffffff // White body to catch maximum sunlight
+            };
+            activateCar(carData);
+        }
+
+        function activateCar(data) {
+            activeCar = data;
             if (vehicleGroup) scene.remove(vehicleGroup);
             
-            const data = VEHICLE_SYSTEM_DATA[id];
             vehicleGroup = new THREE.Group();
             
-            const bodyMat = new THREE.MeshStandardMaterial({ 
+            // High Gloss Paint
+            const paintMat = new THREE.MeshStandardMaterial({ 
                 color: data.color, 
-                metalness: 0.9, 
-                roughness: 0.1 
+                metalness: 1.0, 
+                roughness: 0.0,
+                envMapIntensity: 2.0
             });
             
-            // 1. MAIN CHASSIS (Procedural based on Aero spec)
-            let bodyGeo;
-            if(data.aero === 'AGGRESSIVE') {
-                bodyGeo = new THREE.BoxGeometry(data.scale[0], data.scale[1], data.scale[2]);
-            } else if(data.aero === 'BRUTE') {
-                bodyGeo = new THREE.BoxGeometry(data.scale[0] * 1.1, data.scale[1] * 1.2, data.scale[2]);
-            } else {
-                bodyGeo = new THREE.BoxGeometry(data.scale[0], data.scale[1] * 1.1, data.scale[2] * 0.9);
-            }
-            
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = data.scale[1]/2 + 0.3;
+            // Aerodynamic Body
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2.3, 0.4, 4.8), paintMat);
+            body.position.y = 0.6;
+            body.castShadow = true;
+            body.receiveShadow = true;
             vehicleGroup.add(body);
 
-            // 2. CABIN ASSEMBLY
-            const cabinGeo = new THREE.BoxGeometry(data.scale[0] * 0.7, 0.4, data.scale[2] * 0.35);
-            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 1 });
-            const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-            cabin.position.set(0, data.scale[1] + 0.35, -0.2);
+            const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.5, 2.0), paintMat);
+            cabin.position.set(0, 1.0, -0.3);
+            cabin.castShadow = true;
             vehicleGroup.add(cabin);
 
-            // 3. WHEEL SYSTEMS
-            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.35, 16);
-            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x050505 });
-            const wheelLocs = [[1, 1], [1, -1], [-1, 1], [-1, -1]];
+            // Chrome Details
+            const chromeMat = new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 1, roughness: 0 });
+            const spoiler = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.1, 0.6), chromeMat);
+            spoiler.position.set(0, 1.0, 2.2);
+            vehicleGroup.add(spoiler);
+
+            // Wheels
+            const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.4, 32);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.5 });
+            const wheelPos = [[-1.2, 0.45, 1.7], [1.2, 0.45, 1.7], [-1.2, 0.45, -1.7], [1.2, 0.45, -1.7]];
             
-            wheelLocs.forEach(pos => {
+            wheels = [];
+            wheelPos.forEach(p => {
                 const w = new THREE.Mesh(wheelGeo, wheelMat);
                 w.rotation.z = Math.PI / 2;
-                w.position.set(pos[0] * (data.scale[0]/2), 0.4, pos[1] * (data.scale[2]/3));
+                w.position.set(p[0], p[1], p[2]);
+                w.castShadow = true;
                 vehicleGroup.add(w);
+                wheels.push(w);
             });
 
             scene.add(vehicleGroup);
-            updateUI(id);
-        }
 
-        function updateUI(id) {
-            const data = VEHICLE_SYSTEM_DATA[id];
-            document.getElementById('active-model-name').innerText = data.name;
-            document.getElementById('active-model-class').innerText = data.class;
-            document.getElementById('val-perf-1').innerText = data.maxVelocity + " KM/H";
-            document.getElementById('val-perf-2').innerText = data.handling.toFixed(2);
-            
-            document.getElementById('bar-perf-1').style.width = (data.maxVelocity / 500) * 100 + "%";
-            document.getElementById('bar-perf-2').style.width = (data.handling * 100) + "%";
+            // FORMULA: MPH = 20 * (HP ^ 1/3)
+            const topSpeedMPH = Math.round(20 * Math.pow(data.hp, 1/3));
+            activeCar.topSpeedLimit = topSpeedMPH;
+
+            // UI Refresh
+            const panel = document.getElementById('spec-panel');
+            panel.style.opacity = "1";
+            panel.style.transform = "translateY(0)";
+            document.getElementById('active-name').innerText = data.name;
+            document.getElementById('val-hp').innerHTML = `${data.hp} <span class="text-[10px] text-yellow-500">HP</span>`;
+            document.getElementById('calc-top-speed').innerHTML = `${topSpeedMPH} <span class="text-[10px] text-yellow-500">MPH</span>`;
         }
 
         function animate() {
             requestAnimationFrame(animate);
-
+            
             if (!isDriving) {
-                // Showcase Rotation
-                vehicleGroup.rotation.y += 0.005;
-                camera.position.lerp(new THREE.Vector3(10, 4, 10), 0.05);
-                camera.lookAt(0, 0.5, 0);
-            } else {
-                const data = VEHICLE_SYSTEM_DATA[currentId];
+                if (vehicleGroup) vehicleGroup.rotation.y += 0.005;
+                camera.position.lerp(new THREE.Vector3(10, 6, 10), 0.05);
+                camera.lookAt(0, 0.8, 0);
+            } else if (activeCar) {
+                const topSpeed = activeCar.topSpeedLimit;
+                const accel = (topSpeed / 100) * 0.5;
                 
-                // PHYSICS ENGINE: Velocity restricted by Data
-                if (keys.w) velocity += 0.01;
-                else if (keys.s) velocity -= 0.015;
-                else velocity *= 0.99; // Drag
+                if (keys.w) currentSpeedMPH += accel;
+                else if (keys.s) currentSpeedMPH -= accel * 2;
+                else currentSpeedMPH *= 0.99;
 
-                // PEAK OUTPUT CLAMPING (Direct match to data)
-                const scaledLimit = data.maxVelocity / 1300; 
-                velocity = Math.max(0, Math.min(scaledLimit, velocity));
+                currentSpeedMPH = Math.max(0, Math.min(topSpeed, currentSpeedMPH));
+                
+                if (keys.a) vehicleGroup.rotation.y += 0.04;
+                if (keys.d) vehicleGroup.rotation.y -= 0.04;
 
-                // Steering scaled by handling coefficient
-                if (velocity > 0.005) {
-                    const turnStr = 0.045 * data.handling;
-                    if (keys.a) vehicleGroup.rotation.y += turnStr;
-                    if (keys.d) vehicleGroup.rotation.y -= turnStr;
-                }
-
-                vehicleGroup.translateZ(-velocity);
+                // Move car based on speed
+                const moveStep = currentSpeedMPH * 0.006;
+                vehicleGroup.translateZ(moveStep);
+                wheels.forEach(w => w.rotation.x += moveStep * 4);
 
                 // Chase Cam
-                const camOffset = new THREE.Vector3(0, 3, 11).applyMatrix4(vehicleGroup.matrixWorld);
+                const camOffset = new THREE.Vector3(0, 3, -12).applyMatrix4(vehicleGroup.matrixWorld);
                 camera.position.lerp(camOffset, 0.1);
-                camera.lookAt(vehicleGroup.position.clone().add(new THREE.Vector3(0, 1, 0)));
-
-                // UI Speedometer Sync
-                const displaySpeed = Math.round(velocity * 1300);
-                document.getElementById('speed-val').innerText = displaySpeed.toString().padStart(3, '0');
+                camera.lookAt(vehicleGroup.position.x, vehicleGroup.position.y + 1, vehicleGroup.position.z);
                 
-                const ringProgress = 283 - (283 * (displaySpeed / data.maxVelocity));
-                document.getElementById('speedometer-ring').style.strokeDashoffset = ringProgress;
+                document.getElementById('speed-val').innerText = Math.round(currentSpeedMPH).toString().padStart(3, '0');
             }
-
             renderer.render(scene, camera);
         }
 
-        function generateInventory() {
-            const grid = document.getElementById('dynamic-grid');
-            grid.innerHTML = '';
-            Object.entries(VEHICLE_SYSTEM_DATA).forEach(([id, data]) => {
-                const div = document.createElement('div');
-                div.className = "glass p-8 rounded border hover:border-red-600 transition-all cursor-pointer group interactive";
-                div.innerHTML = `
-                    <div class="text-[9px] text-red-500 font-bold mb-6">CORE_ID: ${id}</div>
-                    <div class="font-brand italic text-2xl mb-2 group-hover:text-red-500 transition-colors">${data.name}</div>
-                    <div class="text-[10px] text-gray-500 mb-6 tracking-tighter">${data.class} / ${data.aero} AERO</div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between text-[10px]"><span>OUTPUT</span><span>${data.maxVelocity}KM/H</span></div>
-                        <div class="h-1 bg-white/5"><div class="h-full bg-red-600" style="width: ${(data.maxVelocity/500)*100}%"></div></div>
-                    </div>
-                `;
-                div.onclick = () => {
-                    currentId = id;
-                    synthesizeVehicle(id);
-                    closeInventory();
-                };
-                grid.appendChild(div);
-            });
-        }
-
-        function closeInventory() {
-            const m = document.getElementById('inventory-modal');
-            m.style.opacity = '0';
-            m.style.pointerEvents = 'none';
-        }
-
-        document.getElementById('open-inventory').onclick = () => {
-            const m = document.getElementById('inventory-modal');
-            m.style.opacity = '1';
-            m.style.pointerEvents = 'auto';
-        };
-
+        document.getElementById('fetch-trigger').onclick = () => location.reload();
         document.getElementById('view-drive').onclick = () => {
+            if (!activeCar) return;
             isDriving = true;
-            document.getElementById('drive-stats').classList.remove('hidden');
-            document.getElementById('spec-panel').classList.add('opacity-40');
+            document.getElementById('spec-panel').style.opacity = "0";
+            document.getElementById('drive-hud').classList.remove('hidden');
         };
-
         document.getElementById('exit-drive').onclick = () => {
-            isDriving = false;
-            velocity = 0;
+            isDriving = false; currentSpeedMPH = 0;
             vehicleGroup.position.set(0,0,0);
-            document.getElementById('drive-stats').classList.add('hidden');
-            document.getElementById('spec-panel').classList.remove('opacity-40');
+            document.getElementById('drive-hud').classList.add('hidden');
+            document.getElementById('spec-panel').style.opacity = "1";
         };
 
         window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
         window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-        window.addEventListener('resize', () => {
+        window.onresize = () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
+        };
+        
         init();
     </script>
 </body>
