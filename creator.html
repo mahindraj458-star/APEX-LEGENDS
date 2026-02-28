@@ -171,9 +171,9 @@
     <!-- LEFT SIDEBAR -->
     <div class="sidebar">
         <div class="sb-header">CORE_CONTROLS</div>
-        <div class="nav-item active" onclick="switchTab('subscribers')">LIVE_NETWORK_INTEL</div>
-        <div class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
-        <div class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
+        <div id="nav-subscribers" class="nav-item active" onclick="switchTab('subscribers')">LIVE_NETWORK_INTEL</div>
+        <div id="nav-create" class="nav-item" onclick="switchTab('create')">CREATE_NEW</div>
+        <div id="nav-edit" class="nav-item" onclick="switchTab('edit')">EDIT_ARCHIVES</div>
         
         <div style="margin-top: 20px; border-top: 1px solid #222; padding-top: 20px;">
             <label for="file-import" class="nav-terminate" style="display: block; cursor: pointer; color: #888; border-color: #333;">IMPORT_DATA</label>
@@ -266,8 +266,12 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(event) event.currentTarget.classList.add('active');
+            
+            const targetTab = document.getElementById(tabId);
+            const targetNav = document.getElementById('nav-' + tabId);
+            
+            if (targetTab) targetTab.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
         }
 
         function addBlock(type, value = '') {
@@ -284,9 +288,11 @@
 
         function updateBlockValue(id, value) {
             const block = contentBlocks.find(b => b.id === id);
-            if (block) block.value = value;
-            if (block.type === 'image') {
-                handleUrlPreview(value, `preview-${id}`);
+            if (block) {
+                block.value = value;
+                if (block.type === 'image') {
+                    handleUrlPreview(value, `preview-${id}`);
+                }
             }
         }
 
@@ -345,7 +351,7 @@
                 title,
                 image: coverImage,
                 excerpt,
-                blocks: [...contentBlocks], // Saving structured blocks
+                blocks: [...contentBlocks],
                 date: isEditing ? drafts.find(d => d.id == idInput).date : new Date().toLocaleDateString(),
                 lastModified: new Date().toLocaleDateString()
             };
@@ -462,7 +468,8 @@
         }
 
         function terminateSession() {
-            if(confirm("TERMINATE_SESSION?")) window.location.href = "index.html";
+            if(confirm("TERMINATE_SESSION?")) {
+                window.location.href = "index.html";
             }
         }
     </script>
