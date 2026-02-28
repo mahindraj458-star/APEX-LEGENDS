@@ -12,6 +12,7 @@
     <!-- External Data Files -->
     <script src="dat.js"></script>
     <script src="nexus_core.js"></script>
+
     <style>
         :root {
             --bg-color: #030303;
@@ -136,6 +137,7 @@
         .hero {
             height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
@@ -168,7 +170,13 @@
         .site-desc-section h3 { color: var(--alert); font-size: 0.8rem; letter-spacing: 5px; margin-bottom: 20px; }
         .site-desc-section p { font-size: 1.5rem; line-height: 1.6; color: #888; font-weight: 300; }
 
-        .mission-cta { text-align: center; padding-bottom: 100px; }
+        .mission-cta { 
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding-bottom: 100px;
+            flex-wrap: wrap;
+        }
         .mission-cta a {
             display: inline-flex;
             align-items: center;
@@ -182,6 +190,10 @@
             transition: 0.3s ease;
         }
         .mission-cta a:hover { color: #fff; background: var(--alert); box-shadow: 0 0 30px rgba(255, 17, 17, 0.4); transform: scale(1.05); }
+        
+        /* Special Button Styles */
+        .btn-gen { border-color: #fff !important; color: #fff !important; }
+        .btn-gen:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 30px rgba(255,255,255,0.2) !important; }
 
         /* --- TICKER --- */
         .ticker-wrap {
@@ -192,6 +204,7 @@
             border-bottom: 1px solid #111;
             padding: 25px 0;
             white-space: nowrap;
+            display: none; /* Hidden until data loaded */
         }
         .ticker { display: inline-flex; animation: marquee 60s linear infinite; }
         .ticker-item {
@@ -221,7 +234,7 @@
             transition: 0.8s cubic-bezier(0.2, 1, 0.3, 1) forwards;
         }
         .archive-item.visible { opacity: 1; transform: translateY(0); }
-        .archive-img-box { flex: 1.2; height: 50vh; overflow: hidden; cursor: pointer; position: relative; }
+        .archive-img-box { flex: 1.2; height: 50vh; overflow: hidden; cursor: pointer; position: relative; border: 1px solid #111; }
         .archive-img-box img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%) brightness(0.4); transition: 0.8s ease; }
         .archive-item:hover .archive-img-box img { filter: grayscale(0%) brightness(1); }
         
@@ -235,12 +248,12 @@
         .view-btn:hover { background: #fff; color: #000; }
 
         /* --- SIDEBAR --- */
-        #menu-toggle { position: fixed; top: 35px; left: 35px; z-index: 1001; cursor: pointer; width: 25px; height: 15px; display: flex; flex-direction: column; justify-content: space-between; }
-        #menu-toggle span { display: block; width: 100%; height: 1px; background: #fff; transition: 0.3s; }
-        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; background: rgba(5,5,5,0.98); backdrop-filter: blur(20px); z-index: 1000; transition: 0.5s; padding: 100px 40px; }
+        #menu-toggle { position: fixed; top: 35px; left: 35px; z-index: 1001; cursor: pointer; width: 30px; height: 20px; display: flex; flex-direction: column; justify-content: space-between; }
+        #menu-toggle span { display: block; width: 100%; height: 2px; background: #fff; transition: 0.3s; }
+        #sidebar { position: fixed; top: 0; left: -320px; width: 320px; height: 100vh; background: rgba(5,5,5,0.98); backdrop-filter: blur(20px); z-index: 1000; transition: 0.5s; padding: 100px 40px; border-right: 1px solid #222; }
         #sidebar.active { left: 0; }
         #sidebar a { 
-            color: #fff; text-decoration: none; display: block; margin-bottom: 30px; font-size: 1.1rem; 
+            color: #fff; text-decoration: none; display: block; margin-bottom: 25px; font-size: 1rem; 
             letter-spacing: 2px; position: relative; font-family: 'Syncopate', sans-serif; width: fit-content;
         }
         #sidebar a::after {
@@ -248,6 +261,9 @@
             background: var(--alert); transition: width 0.4s cubic-bezier(0.8, 0, 0.2, 1); box-shadow: 0 0 10px var(--alert);
         }
         #sidebar a:hover::after { width: 100%; }
+        
+        .sidebar-divider { height: 1px; background: #222; margin: 20px 0; width: 50%; }
+        .nav-label { font-size: 0.6rem; color: #444; letter-spacing: 3px; margin-bottom: 15px; display: block; }
 
         footer { padding: 100px 5vw 50px; text-align: center; font-size: 0.6rem; color: #333; letter-spacing: 5px; }
 
@@ -255,6 +271,8 @@
             .archive-item { flex-direction: column; }
             .archive-img-box { width: 100%; height: 35vh; }
             .archive-info h2 { font-size: 2.5rem; }
+            .mission-cta { padding-left: 20px; padding-right: 20px; }
+            .mission-cta a { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -278,8 +296,18 @@
     </div>
 
     <nav id="sidebar">
+        <span class="nav-label">ARCHIVE_EXPLORER</span>
+        <a href="index.html">HOME</a>
         <a href="Showroom.html">SHOWROOM</a>
         <a href="blog.html">THE BLOG</a>
+        
+        <div class="sidebar-divider"></div>
+        <span class="nav-label">UNIT_MANAGEMENT</span>
+        <a href="apex-garage.html" style="color: var(--alert);">MY_GARAGE</a>
+        <a href="apex-gen.html">APEX_GEN [AI]</a>
+        
+        <div class="sidebar-divider"></div>
+        <span class="nav-label">SYSTEM_ACCESS</span>
         <a href="admin.html">TERMINAL</a>
     </nav>
 
@@ -294,15 +322,19 @@
 
     <div class="mission-cta">
         <a href="Showroom.html">ENTER_SHOWROOM</a>
+        <a href="apex-garage.html" class="btn-garage">ACCESS_GARAGE</a>
+        <a href="apex-gen.html" class="btn-gen">CREATE_WITH_GEN</a>
     </div>
 
-    <section class="ticker-wrap">
+    <section class="ticker-wrap" id="tickerWrapper">
         <div class="ticker" id="carTicker"></div>
     </section>
 
-    <section id="archive-list"></section>
+    <section id="archive-list">
+        <!-- Data dynamically rendered from dat.js -->
+    </section>
 
-    <footer>© 2024 APEX DIGITAL ARCHIVE // ALL RIGHTS RESERVED</footer>
+    <footer>© 2024 APEX DIGITAL ARCHIVE // POWERED BY HONKPISTON</footer>
 
     <script>
         // Intro Animation Sequence
@@ -345,11 +377,14 @@
         // Main Data Render Logic
         document.addEventListener('DOMContentLoaded', () => {
             const ticker = document.getElementById('carTicker');
+            const tickerWrapper = document.getElementById('tickerWrapper');
             const archiveList = document.getElementById('archive-list');
             
+            // carDatabase should be provided by dat.js
             const data = window.carDatabase || [];
 
             if(data.length > 0) {
+                tickerWrapper.style.display = 'block';
                 // Ticker Content
                 const tickerContent = data.map(car => `
                     <div class="ticker-item">
@@ -360,12 +395,13 @@
 
                 // Billboard Content
                 archiveList.innerHTML = '';
+                
                 data.forEach((car) => {
                     const item = document.createElement('div');
                     item.className = 'archive-item';
                     item.innerHTML = `
                         <div class="archive-img-box" onclick="localStorage.setItem('selected_car_id', '${car.id}'); window.location.href='Showroom.html'">
-                            <img src="${car.images?.desktop || ''}" onerror="this.src='https://via.placeholder.com/800x450?text=UNIT_UNAVAILABLE'">
+                            <img src="${car.images?.desktop || ''}" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x450?text=UNIT_UNAVAILABLE'">
                         </div>
                         <div class="archive-info">
                             <span class="year-label">YEAR: ${car.year || 'TBA'}</span>
@@ -379,11 +415,20 @@
                     archiveList.appendChild(item);
                 });
 
-                // Intersection Observer
+                // Intersection Observer for scroll reveal
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
                 }, { threshold: 0.1 });
                 document.querySelectorAll('.archive-item').forEach(el => observer.observe(el));
+            }
+        });
+
+        // Close menu on click outside
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            if (sidebar.classList.contains('active') && !sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
             }
         });
     </script>
