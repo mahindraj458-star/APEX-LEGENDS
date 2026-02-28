@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-    <!-- Loading your actual blog data -->
+    <!-- This script loads the data into window.blogPosts -->
     <script src="blog_data.js"></script>
 
     <style>
@@ -37,7 +37,6 @@
 
         .sync-font { font-family: 'Syncopate', sans-serif; text-transform: uppercase; }
 
-        /* --- PROGRESS BAR --- */
         #progress-container {
             position: fixed;
             top: 0; left: 0;
@@ -53,7 +52,6 @@
             transition: width 0.1s ease-out;
         }
 
-        /* --- NAVIGATION --- */
         nav {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -68,7 +66,6 @@
         .back-link { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--alert); text-decoration: none; letter-spacing: 2px; border: 1px solid rgba(255, 17, 17, 0.4); padding: 6px 12px; transition: 0.3s; }
         .back-link:hover { background: var(--alert); color: #fff; border-color: var(--alert); }
 
-        /* --- HERO SECTION --- */
         .article-hero {
             height: 60vh;
             width: 100%;
@@ -105,7 +102,6 @@
         
         .article-meta { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--text-muted); display: flex; gap: 30px; border-top: 1px solid #1a1a1a; padding-top: 20px; letter-spacing: 2px; }
 
-        /* --- ARTICLE CONTENT WRAPPER --- */
         .article-wrapper {
             max-width: 1000px;
             margin: 0 auto;
@@ -113,7 +109,6 @@
             position: relative;
         }
 
-        /* --- BODY CONTENT & IMAGES --- */
         .article-body { position: relative; }
         .article-body p { 
             margin-bottom: 25px; 
@@ -124,7 +119,6 @@
             z-index: 2;
         }
 
-        /* Contextual Images */
         .body-img-wrap {
             margin: 40px 0;
             clear: both;
@@ -136,11 +130,6 @@
             float: right;
             width: 45%;
             margin: 10px 0 25px 30px;
-        }
-        .body-img-wrap.float-left {
-            float: left;
-            width: 45%;
-            margin: 10px 30px 25px 0;
         }
         .body-img-wrap img {
             width: 100%;
@@ -159,7 +148,6 @@
             text-align: right;
         }
 
-        /* --- COLLAPSIBLE SECTIONS --- */
         .article-section {
             border-bottom: 1px solid #1a1a1a;
             clear: both;
@@ -176,6 +164,7 @@
             text-align: left;
             transition: 0.3s;
             outline: none;
+            cursor: pointer;
         }
         .section-header h2 {
             font-family: 'Syncopate';
@@ -221,13 +210,7 @@
             line-height: 1.6;
             clear: both;
         }
-        .list-panel::before {
-            content: '•';
-            color: var(--alert);
-            font-weight: bold;
-        }
 
-        /* --- AI FLOATER --- */
         .ai-status {
             position: sticky;
             top: 120px;
@@ -243,7 +226,6 @@
         .ai-status h4 { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--alert); margin-bottom: 12px; letter-spacing: 2px; }
         #ai-insight { font-family: var(--sans-font); font-size: 0.75rem; color: #777; line-height: 1.5; font-style: italic; }
 
-        /* --- FOOTER --- */
         footer { padding: 80px 8vw; background: #000; text-align: center; border-top: 1px solid #0a0a0a; }
         .next-card {
             display: block;
@@ -259,7 +241,7 @@
 
         @media (max-width: 1400px) {
             .ai-status { position: relative; float: none; margin: 0 auto 40px; width: 100%; right: 0; }
-            .body-img-wrap.float-right, .body-img-wrap.float-left { width: 100%; float: none; margin: 30px 0; }
+            .body-img-wrap.float-right { width: 100%; float: none; margin: 30px 0; }
         }
     </style>
 </head>
@@ -291,6 +273,10 @@
 
         async function fetchInsight(title) {
             const target = document.getElementById('ai-insight');
+            if (!apiKey) {
+                target.innerText = "Neural connection awaiting key.";
+                return;
+            }
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -306,53 +292,64 @@
 
         function formatContent(raw, mainImage) {
             if (!raw) return "";
-            const lines = raw.split('\n');
+            
+            // Clean up double newlines and split into blocks
+            const blocks = raw.split(/\n\s*\n/);
             let html = "";
             let sectionOpen = false;
-            let pCount = 0;
             let imgInjected = false;
 
-            lines.forEach((line, index) => {
-                const trimmed = line.trim();
-                if (!trimmed) return;
+            blocks.forEach((block, index) => {
+                const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                if (lines.length === 0) return;
 
-                const isHeading = (trimmed.length < 60 && !trimmed.includes('.') && trimmed === trimmed.toUpperCase()) || 
-                                 (trimmed.length < 50 && !trimmed.includes('.') && !trimmed.includes(','));
+                // Determine if the block is a heading (Short, capitalized, or specific pattern)
+                const firstLine = lines[0];
+                const isHeading = (firstLine.length < 60 && firstLine === firstLine.toUpperCase()) || 
+                                 (firstLine.endsWith(':')) || 
+                                 (index === 0 && !firstLine.includes('.'));
 
                 if (isHeading) {
                     if (sectionOpen) html += `</div></div>`;
                     html += `
                         <div class="article-section">
                             <button class="section-header" onclick="toggleSection(this)">
-                                <h2>${trimmed}</h2>
+                                <h2>${firstLine}</h2>
                                 <span class="section-icon">+</span>
                             </button>
                             <div class="section-content">
                     `;
                     sectionOpen = true;
-                } else if (trimmed.startsWith('-')) {
-                    html += `<div class="list-panel">${trimmed.replace(/^-/, '').trim()}</div>`;
+                    // Process remaining lines in the block as paragraphs/lists
+                    lines.slice(1).forEach(l => html += processLine(l));
                 } else {
-                    pCount++;
-                    html += `<p>${trimmed}</p>`;
-                    
-                    // Logic to inject image into the content
-                    // Every 4th paragraph or if we reach middle of text and haven't injected yet
-                    if (!imgInjected && (pCount === 2 || (index > lines.length / 2))) {
-                        const styleClass = pCount % 2 === 0 ? 'float-right' : 'full-width';
-                        html += `
-                            <div class="body-img-wrap ${styleClass}">
-                                <img src="${mainImage}" alt="Data Fragment">
-                                <div class="img-caption">IMG_REF // SOURCE_LINK_ESTABLISHED</div>
-                            </div>
-                        `;
-                        imgInjected = true;
-                    }
+                    // Just a regular block of text
+                    lines.forEach(l => {
+                        html += processLine(l);
+                    });
+                }
+
+                // Inject image logic
+                if (!imgInjected && index === Math.floor(blocks.length / 2)) {
+                    html += `
+                        <div class="body-img-wrap float-right">
+                            <img src="${mainImage}" alt="Data Fragment">
+                            <div class="img-caption">IMG_REF // SOURCE_LINK_ESTABLISHED</div>
+                        </div>
+                    `;
+                    imgInjected = true;
                 }
             });
 
             if (sectionOpen) html += `</div></div>`;
             return html;
+        }
+
+        function processLine(l) {
+            if (l.startsWith('•') || l.startsWith('-') || /^\d+\./.test(l)) {
+                return `<div class="list-panel">${l.replace(/^[•\-\d\.]+\s*/, '')}</div>`;
+            }
+            return `<p>${l}</p>`;
         }
 
         function toggleSection(btn) {
@@ -364,15 +361,19 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Check window.blogPosts directly (from blog_data.js)
             const posts = window.blogPosts || [];
             const container = document.getElementById('article-root');
             const urlParams = new URLSearchParams(window.location.search);
-            const post = posts.find(p => p.id.toString() === urlParams.get('id'));
+            const postId = urlParams.get('id');
+            
+            // Find post by ID (handle string vs number)
+            const post = posts.find(p => p.id.toString() === postId);
 
             if (post) {
                 container.innerHTML = `
                     <section class="article-hero">
-                        <div class="hero-bg"><img src="${post.image}"></div>
+                        <div class="hero-bg"><img src="${post.image}" onerror="this.src='https://via.placeholder.com/1200x600?text=DATA_LOST'"></div>
                         <div class="hero-content">
                             <span class="category-tag sync-font">CHRONICLE // ${post.id}</span>
                             <h1 class="article-title sync-font">${post.title}</h1>
@@ -394,6 +395,7 @@
                     </div>
                 `;
 
+                // Handle Next Article
                 const idx = posts.indexOf(post);
                 const nextPost = posts[(idx + 1) % posts.length];
                 document.getElementById('next-article-container').innerHTML = `
@@ -405,10 +407,13 @@
                 fetchInsight(post.title);
                 document.title = `APEX // ${post.title}`;
 
+                // Auto-open first section for flair
                 setTimeout(() => {
                     const firstHeader = document.querySelector('.section-header');
                     if (firstHeader) toggleSection(firstHeader);
                 }, 400);
+            } else {
+                container.innerHTML = `<div style="padding:100px; text-align:center;" class="sync-font">ERROR // DATA_NOT_FOUND</div>`;
             }
         });
     </script>
