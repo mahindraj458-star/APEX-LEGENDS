@@ -109,7 +109,7 @@
         .nav-list { list-style: none; }
         .nav-item {
             font-family: 'Syncopate';
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             margin-bottom: 15px;
             line-height: 1.4;
         }
@@ -120,6 +120,10 @@
             display: block;
             border-left: 2px solid transparent;
             padding-left: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 240px;
         }
         .nav-item a:hover, .nav-item a.active {
             color: var(--alert);
@@ -127,17 +131,17 @@
         }
 
         /* MAIN CONTENT */
-        .article-body { max-width: 800px; margin: 0 auto; }
+        .article-body { max-width: 800px; margin: 0 auto; width: 100%; }
         .article-body p { margin-bottom: 30px; font-size: 1.1rem; color: #aaa; }
 
         .block-heading {
             font-family: 'Syncopate';
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             color: #fff;
             margin: 80px 0 30px;
             letter-spacing: 1px;
             padding-top: 20px;
-            scroll-margin-top: 120px; /* Offset for sticky nav */
+            scroll-margin-top: 120px;
         }
 
         .block-image-wrap {
@@ -186,7 +190,7 @@
         /* RESPONSIVE */
         @media (max-width: 1200px) {
             .article-layout { grid-template-columns: 1fr; }
-            .side-nav, .ai-status { display: none; } /* Hide sidebars on small screens */
+            .side-nav, .ai-status { display: none; }
             .article-body { max-width: 100%; }
         }
     </style>
@@ -214,9 +218,9 @@
             const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
             const scrolled = (winScroll / height) * 100;
-            document.getElementById("progress-bar").style.width = scrolled + "%";
+            const pb = document.getElementById("progress-bar");
+            if(pb) pb.style.width = scrolled + "%";
 
-            // Update Active Heading in Nav
             const headings = document.querySelectorAll('.block-heading');
             const navLinks = document.querySelectorAll('.nav-item a');
             
@@ -234,6 +238,7 @@
 
         async function fetchInsight(title) {
             const target = document.getElementById('ai-insight');
+            if (!target) return;
             if (!apiKey) { target.innerText = "Connection pending..."; return; }
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
@@ -248,28 +253,53 @@
             } catch (e) { target.innerText = "Offline."; }
         }
 
-        function buildArticle(post) {
-            const isBlockBased = post.blocks && Array.isArray(post.blocks);
+        // Unified parser for both block-based and classic string-based content
+        function parseContent(post) {
             let contentHtml = "";
             let navHtml = "";
             let headingCounter = 0;
 
-            if (isBlockBased) {
+            const addHeading = (text) => {
+                const id = `section-${headingCounter++}`;
+                contentHtml += `<h3 class="block-heading" id="${id}">${text}</h3>`;
+                navHtml += `<li class="nav-item"><a href="#${id}">${text}</a></li>`;
+            };
+
+            // CASE 1: Classic String Content (Old Blogs)
+            if (typeof post.content === 'string') {
+                const lines = post.content.split('\n');
+                lines.forEach(line => {
+                    const t = line.trim();
+                    if (!t) return;
+
+                    // Simple logic to detect headings in old text:
+                    // 1. Starts with a number "1. "
+                    // 2. Is all uppercase and short
+                    // 3. Ends with "?"
+                    const isHeading = /^\d+\./.test(t) || (t.length < 50 && t === t.toUpperCase()) || t.endsWith('?');
+                    
+                    if (isHeading) {
+                        addHeading(t);
+                    } else {
+                        contentHtml += processLine(t);
+                    }
+                });
+            } 
+            // CASE 2: Modern Block Content
+            else if (post.blocks && Array.isArray(post.blocks)) {
                 post.blocks.forEach(block => {
                     if (block.type === 'text') {
-                        const paragraphs = block.value.split(/\n\n/);
-                        paragraphs.forEach(p => {
-                            const lines = p.split('\n').filter(l => l.trim().length > 0);
+                        const chunks = block.value.split(/\n\n/);
+                        chunks.forEach(chunk => {
+                            const lines = chunk.split('\n').filter(l => l.trim().length > 0);
                             if (lines.length === 0) return;
 
                             const firstLine = lines[0].trim();
-                            // Heading Logic: Numbered or Question or Short
-                            const isHeading = /^\d+\./.test(firstLine) || firstLine.endsWith('?') || (firstLine.length < 60 && lines.length > 1);
+                            // Logic: Numbered or short descriptive line
+                            const isHeading = /^\d+\./.test(firstLine) || firstLine.endsWith('?') || (firstLine.length < 65 && lines.length > 1);
 
                             if (isHeading) {
-                                const id = `section-${headingCounter++}`;
-                                contentHtml += `<h3 class="block-heading" id="${id}">${firstLine}</h3>`;
-                                navHtml += `<li class="nav-item"><a href="#${id}">${firstLine}</a></li>`;
+                                addHeading(firstLine);
                                 lines.slice(1).forEach(l => contentHtml += processLine(l));
                             } else {
                                 lines.forEach(l => contentHtml += processLine(l));
@@ -290,6 +320,7 @@
 
         function processLine(l) {
             const t = l.trim();
+            // Detect list items or warnings
             if (t.startsWith('•') || t.startsWith('-') || /^\d+\./.test(t) || t.startsWith('⚠️') || t.startsWith('⏸')) {
                 return `<div class="list-panel">${t}</div>`;
             }
@@ -303,7 +334,7 @@
             const post = posts.find(p => p.id.toString() === urlParams.get('id'));
 
             if (post) {
-                const result = buildArticle(post);
+                const result = parseContent(post);
                 
                 root.innerHTML = `
                     <section class="article-hero">
@@ -321,7 +352,7 @@
                     <div class="article-layout">
                         <aside class="side-nav">
                             <h4 class="sync-font">DATA_NAVIGATOR</h4>
-                            <ul class="nav-list">${result.nav}</ul>
+                            <ul class="nav-list">${result.nav || '<li class="nav-item" style="color:#333">NO_DATA_NODES</li>'}</ul>
                         </aside>
 
                         <main class="article-body">
@@ -335,14 +366,17 @@
                     </div>
                 `;
 
-                // Handle footer "Next"
+                // Setup footer "Next"
                 const idx = posts.indexOf(post);
                 const next = posts[(idx + 1) % posts.length];
-                document.getElementById('next-article-container').innerHTML = `
-                    <a href="blog_viewer.html?id=${next.id}" class="next-card">
-                        <h4 class="sync-font">${next.title}</h4>
-                    </a>
-                `;
+                const nextContainer = document.getElementById('next-article-container');
+                if (nextContainer) {
+                    nextContainer.innerHTML = `
+                        <a href="blog_viewer.html?id=${next.id}" class="next-card">
+                            <h4 class="sync-font">${next.title}</h4>
+                        </a>
+                    `;
+                }
 
                 fetchInsight(post.title);
                 document.title = `APEX // ${post.title}`;
