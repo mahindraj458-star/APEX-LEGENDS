@@ -119,33 +119,43 @@
             z-index: 2;
         }
 
-        .body-img-wrap {
-            margin: 40px 0;
-            clear: both;
-            border: 1px solid #1a1a1a;
-            padding: 10px;
+        /* Block Image Styling */
+        .block-image-wrap {
+            margin: 60px 0;
+            padding: 15px;
             background: #080808;
+            border: 1px solid #1a1a1a;
+            position: relative;
         }
-        .body-img-wrap.float-right {
-            float: right;
-            width: 45%;
-            margin: 10px 0 25px 30px;
-        }
-        .body-img-wrap img {
+        .block-image-wrap img {
             width: 100%;
             height: auto;
             display: block;
-            filter: grayscale(0.4) contrast(1.1);
-            transition: 0.5s;
+            filter: grayscale(0.2);
+            transition: 0.5s filter ease;
         }
-        .body-img-wrap:hover img { filter: grayscale(0); }
-        .img-caption {
+        .block-image-wrap:hover img { filter: grayscale(0); }
+        .block-image-wrap::before {
+            content: 'DATA_VISUAL_BLOCK';
+            position: absolute;
+            top: -12px; left: 20px;
+            background: var(--bg-color);
+            padding: 0 10px;
             font-family: 'Syncopate';
             font-size: 0.5rem;
-            color: var(--text-muted);
-            margin-top: 10px;
-            letter-spacing: 1px;
-            text-align: right;
+            color: var(--alert);
+        }
+
+        /* Heading within blocks */
+        .block-heading {
+            font-family: 'Syncopate';
+            font-size: 1.4rem;
+            color: #fff;
+            margin-top: 60px;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+            border-left: 3px solid var(--alert);
+            padding-left: 20px;
         }
 
         .article-section {
@@ -194,7 +204,7 @@
             overflow: hidden;
             transition: max-height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .section-content.open { max-height: 5000px; padding-bottom: 40px; }
+        .section-content.open { max-height: 10000px; padding-bottom: 40px; }
 
         .list-panel {
             background: rgba(255, 255, 255, 0.02);
@@ -205,7 +215,7 @@
             align-items: flex-start;
             gap: 15px;
             font-family: var(--sans-font);
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: #999;
             line-height: 1.6;
             clear: both;
@@ -241,7 +251,6 @@
 
         @media (max-width: 1400px) {
             .ai-status { position: relative; float: none; margin: 0 auto 40px; width: 100%; right: 0; }
-            .body-img-wrap.float-right { width: 100%; float: none; margin: 30px 0; }
         }
     </style>
 </head>
@@ -290,24 +299,49 @@
             } catch (e) { target.innerText = "Connection lost."; }
         }
 
-        function formatContent(raw, mainImage) {
+        function formatBlockContent(blocks) {
+            let html = "";
+            blocks.forEach(block => {
+                if (block.type === 'text') {
+                    const lines = block.value.split('\n');
+                    lines.forEach(line => {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.length === 0) return;
+
+                        // Heading detection logic
+                        const isHeading = /^[0-9]\.|^[A-Z][a-zA-Z\s]+\?$/.test(trimmedLine);
+                        
+                        if (isHeading) {
+                            html += `<h3 class="block-heading">${trimmedLine}</h3>`;
+                        } else if (trimmedLine.startsWith('•') || trimmedLine.startsWith('-') || /^\d+\./.test(trimmedLine)) {
+                            html += `<div class="list-panel">${trimmedLine.replace(/^[•\-\d\.]+\s*/, '')}</div>`;
+                        } else {
+                            html += `<p>${trimmedLine}</p>`;
+                        }
+                    });
+                } else if (block.type === 'image') {
+                    html += `
+                        <div class="block-image-wrap">
+                            <img src="${block.value}" alt="Visual Data Block" onerror="this.src='https://via.placeholder.com/800x450?text=DATA_FRAGMENT_LOST'">
+                        </div>
+                    `;
+                }
+            });
+            return html;
+        }
+
+        function formatLegacyContent(raw, mainImage) {
             if (!raw) return "";
-            
-            // Clean up double newlines and split into blocks
             const blocks = raw.split(/\n\s*\n/);
             let html = "";
             let sectionOpen = false;
-            let imgInjected = false;
 
             blocks.forEach((block, index) => {
                 const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
                 if (lines.length === 0) return;
 
-                // Determine if the block is a heading (Short, capitalized, or specific pattern)
                 const firstLine = lines[0];
-                const isHeading = (firstLine.length < 60 && firstLine === firstLine.toUpperCase()) || 
-                                 (firstLine.endsWith(':')) || 
-                                 (index === 0 && !firstLine.includes('.'));
+                const isHeading = (firstLine.length < 60 && firstLine === firstLine.toUpperCase()) || (firstLine.endsWith(':'));
 
                 if (isHeading) {
                     if (sectionOpen) html += `</div></div>`;
@@ -320,24 +354,9 @@
                             <div class="section-content">
                     `;
                     sectionOpen = true;
-                    // Process remaining lines in the block as paragraphs/lists
                     lines.slice(1).forEach(l => html += processLine(l));
                 } else {
-                    // Just a regular block of text
-                    lines.forEach(l => {
-                        html += processLine(l);
-                    });
-                }
-
-                // Inject image logic
-                if (!imgInjected && index === Math.floor(blocks.length / 2)) {
-                    html += `
-                        <div class="body-img-wrap float-right">
-                            <img src="${mainImage}" alt="Data Fragment">
-                            <div class="img-caption">IMG_REF // SOURCE_LINK_ESTABLISHED</div>
-                        </div>
-                    `;
-                    imgInjected = true;
+                    lines.forEach(l => html += processLine(l));
                 }
             });
 
@@ -361,16 +380,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Check window.blogPosts directly (from blog_data.js)
             const posts = window.blogPosts || [];
             const container = document.getElementById('article-root');
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('id');
-            
-            // Find post by ID (handle string vs number)
             const post = posts.find(p => p.id.toString() === postId);
 
             if (post) {
+                const isBlockBased = post.blocks && Array.isArray(post.blocks);
+                
                 container.innerHTML = `
                     <section class="article-hero">
                         <div class="hero-bg"><img src="${post.image}" onerror="this.src='https://via.placeholder.com/1200x600?text=DATA_LOST'"></div>
@@ -379,7 +397,7 @@
                             <h1 class="article-title sync-font">${post.title}</h1>
                             <div class="article-meta">
                                 <span>PUBLISHED: ${post.date}</span>
-                                <span style="color:var(--alert)">STATUS: DECLASSIFIED</span>
+                                <span style="color:var(--alert)">STATUS: ${isBlockBased ? 'STRUCTURED_DATA' : 'RAW_DECRYPT'}</span>
                             </div>
                         </div>
                     </section>
@@ -390,7 +408,9 @@
                             <p id="ai-insight">Processing...</p>
                         </aside>
                         <main class="article-body">
-                            ${formatContent(post.content, post.image)}
+                            ${isBlockBased 
+                                ? formatBlockContent(post.blocks) 
+                                : formatLegacyContent(post.content, post.image)}
                         </main>
                     </div>
                 `;
@@ -407,11 +427,13 @@
                 fetchInsight(post.title);
                 document.title = `APEX // ${post.title}`;
 
-                // Auto-open first section for flair
-                setTimeout(() => {
-                    const firstHeader = document.querySelector('.section-header');
-                    if (firstHeader) toggleSection(firstHeader);
-                }, 400);
+                // Only auto-open if it's the legacy section style
+                if (!isBlockBased) {
+                    setTimeout(() => {
+                        const firstHeader = document.querySelector('.section-header');
+                        if (firstHeader) toggleSection(firstHeader);
+                    }, 400);
+                }
             } else {
                 container.innerHTML = `<div style="padding:100px; text-align:center;" class="sync-font">ERROR // DATA_NOT_FOUND</div>`;
             }
