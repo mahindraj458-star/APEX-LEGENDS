@@ -70,7 +70,7 @@
 
         /* --- HERO SECTION --- */
         .article-hero {
-            height: 60vh; /* Reduced height for a tighter look */
+            height: 60vh;
             width: 100%;
             position: relative;
             display: flex;
@@ -94,7 +94,6 @@
         .hero-content { max-width: 1000px; z-index: 10; }
         .category-tag { font-family: 'Syncopate'; font-size: 0.65rem; color: var(--alert); letter-spacing: 4px; margin-bottom: 15px; display: block; opacity: 0.8; }
         
-        /* ADJUSTED HEADING SIZE: More editorial, less "poster" style */
         .article-title { 
             font-size: clamp(2rem, 4.5vw, 3.2rem); 
             line-height: 1.2; 
@@ -114,9 +113,56 @@
             position: relative;
         }
 
-        /* --- COLLAPSIBLE SECTIONS (ACCORDION) --- */
+        /* --- BODY CONTENT & IMAGES --- */
+        .article-body { position: relative; }
+        .article-body p { 
+            margin-bottom: 25px; 
+            font-size: 1.15rem; 
+            color: #aaa;
+            text-align: left;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Contextual Images */
+        .body-img-wrap {
+            margin: 40px 0;
+            clear: both;
+            border: 1px solid #1a1a1a;
+            padding: 10px;
+            background: #080808;
+        }
+        .body-img-wrap.float-right {
+            float: right;
+            width: 45%;
+            margin: 10px 0 25px 30px;
+        }
+        .body-img-wrap.float-left {
+            float: left;
+            width: 45%;
+            margin: 10px 30px 25px 0;
+        }
+        .body-img-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: grayscale(0.4) contrast(1.1);
+            transition: 0.5s;
+        }
+        .body-img-wrap:hover img { filter: grayscale(0); }
+        .img-caption {
+            font-family: 'Syncopate';
+            font-size: 0.5rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+            letter-spacing: 1px;
+            text-align: right;
+        }
+
+        /* --- COLLAPSIBLE SECTIONS --- */
         .article-section {
             border-bottom: 1px solid #1a1a1a;
+            clear: both;
         }
         .section-header {
             width: 100%;
@@ -161,7 +207,6 @@
         }
         .section-content.open { max-height: 5000px; padding-bottom: 40px; }
 
-        /* --- LIST PANELS (CLEANER, NON-HIGHLIGHTED TEXT) --- */
         .list-panel {
             background: rgba(255, 255, 255, 0.02);
             border-left: 2px solid var(--alert);
@@ -172,20 +217,14 @@
             gap: 15px;
             font-family: var(--sans-font);
             font-size: 0.9rem;
-            color: #999; /* Muted color for points */
+            color: #999;
             line-height: 1.6;
+            clear: both;
         }
         .list-panel::before {
             content: '•';
             color: var(--alert);
             font-weight: bold;
-        }
-
-        .article-body p { 
-            margin-bottom: 25px; 
-            font-size: 1.15rem; 
-            color: #aaa;
-            text-align: left;
         }
 
         /* --- AI FLOATER --- */
@@ -220,6 +259,7 @@
 
         @media (max-width: 1400px) {
             .ai-status { position: relative; float: none; margin: 0 auto 40px; width: 100%; right: 0; }
+            .body-img-wrap.float-right, .body-img-wrap.float-left { width: 100%; float: none; margin: 30px 0; }
         }
     </style>
 </head>
@@ -264,17 +304,18 @@
             } catch (e) { target.innerText = "Connection lost."; }
         }
 
-        function formatContent(raw) {
+        function formatContent(raw, mainImage) {
             if (!raw) return "";
             const lines = raw.split('\n');
             let html = "";
             let sectionOpen = false;
+            let pCount = 0;
+            let imgInjected = false;
 
-            lines.forEach(line => {
+            lines.forEach((line, index) => {
                 const trimmed = line.trim();
                 if (!trimmed) return;
 
-                // Identify Headings (Uppercase or short lines without end punctuation)
                 const isHeading = (trimmed.length < 60 && !trimmed.includes('.') && trimmed === trimmed.toUpperCase()) || 
                                  (trimmed.length < 50 && !trimmed.includes('.') && !trimmed.includes(','));
 
@@ -292,7 +333,21 @@
                 } else if (trimmed.startsWith('-')) {
                     html += `<div class="list-panel">${trimmed.replace(/^-/, '').trim()}</div>`;
                 } else {
+                    pCount++;
                     html += `<p>${trimmed}</p>`;
+                    
+                    // Logic to inject image into the content
+                    // Every 4th paragraph or if we reach middle of text and haven't injected yet
+                    if (!imgInjected && (pCount === 2 || (index > lines.length / 2))) {
+                        const styleClass = pCount % 2 === 0 ? 'float-right' : 'full-width';
+                        html += `
+                            <div class="body-img-wrap ${styleClass}">
+                                <img src="${mainImage}" alt="Data Fragment">
+                                <div class="img-caption">IMG_REF // SOURCE_LINK_ESTABLISHED</div>
+                            </div>
+                        `;
+                        imgInjected = true;
+                    }
                 }
             });
 
@@ -334,7 +389,7 @@
                             <p id="ai-insight">Processing...</p>
                         </aside>
                         <main class="article-body">
-                            ${formatContent(post.content)}
+                            ${formatContent(post.content, post.image)}
                         </main>
                     </div>
                 `;
@@ -350,7 +405,6 @@
                 fetchInsight(post.title);
                 document.title = `APEX // ${post.title}`;
 
-                // Auto-open first section for a better UX
                 setTimeout(() => {
                     const firstHeader = document.querySelector('.section-header');
                     if (firstHeader) toggleSection(firstHeader);
