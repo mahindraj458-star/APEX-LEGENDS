@@ -7,7 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="blog_data.js"></script>
 
@@ -15,12 +15,13 @@
         :root {
             --bg-color: #030303;
             --text-main: #e0e0e0;
-            --text-muted: #888;
+            --text-muted: #666;
             --accent: #ffffff;
             --alert: #ff1111;
             --glass: rgba(15, 15, 15, 0.85);
             --serif-font: 'Playfair Display', 'Georgia', serif;
-            --sans-font: 'Arial', sans-serif;
+            --sans-font: 'Inter', 'Arial', sans-serif;
+            --mono-font: 'Syncopate', sans-serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; cursor: crosshair; scroll-behavior: smooth; }
@@ -34,7 +35,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .sync-font { font-family: 'Syncopate', sans-serif; text-transform: uppercase; }
+        .sync-font { font-family: var(--mono-font); text-transform: uppercase; }
 
         #progress-container {
             position: fixed;
@@ -61,7 +62,7 @@
             background: linear-gradient(to bottom, rgba(3,3,3,1), rgba(3,3,3,0));
         }
         .logo { font-size: 1rem; letter-spacing: 6px; color: #fff; text-decoration: none; font-weight: 700; opacity: 0.8; }
-        .back-link { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--alert); text-decoration: none; letter-spacing: 2px; border: 1px solid rgba(255, 17, 17, 0.4); padding: 6px 12px; transition: 0.3s; }
+        .back-link { font-family: var(--mono-font); font-size: 0.55rem; color: var(--alert); text-decoration: none; letter-spacing: 2px; border: 1px solid rgba(255, 17, 17, 0.4); padding: 6px 12px; transition: 0.3s; }
         .back-link:hover { background: var(--alert); color: #fff; }
 
         .article-hero {
@@ -78,9 +79,9 @@
         }
 
         .hero-content { max-width: 1000px; z-index: 10; }
-        .category-tag { font-family: 'Syncopate'; font-size: 0.65rem; color: var(--alert); letter-spacing: 4px; margin-bottom: 15px; display: block; }
+        .category-tag { font-family: var(--mono-font); font-size: 0.65rem; color: var(--alert); letter-spacing: 4px; margin-bottom: 15px; display: block; }
         .article-title { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; margin-bottom: 25px; color: #fff; }
-        .article-meta { font-family: 'Syncopate'; font-size: 0.6rem; color: var(--text-muted); display: flex; gap: 30px; border-top: 1px solid #222; padding-top: 20px; letter-spacing: 2px; }
+        .article-meta { font-family: var(--mono-font); font-size: 0.6rem; color: var(--text-muted); display: flex; gap: 30px; border-top: 1px solid #222; padding-top: 20px; letter-spacing: 2px; }
 
         .article-layout {
             display: grid;
@@ -92,61 +93,90 @@
             position: relative;
         }
 
+        /* --- Updated Side Nav Styling --- */
         .side-nav {
             position: sticky; top: 120px;
             height: fit-content;
             padding-right: 20px;
-            border-right: 1px solid #111;
+            border-right: 1px solid #1a1a1a;
         }
-        .side-nav h4 { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--text-muted); margin-bottom: 20px; letter-spacing: 2px; }
+        .side-nav h4 { 
+            font-family: var(--mono-font); 
+            font-size: 0.6rem; 
+            color: var(--alert); 
+            margin-bottom: 30px; 
+            letter-spacing: 3px;
+            opacity: 0.8;
+        }
         .nav-list { list-style: none; }
-        .nav-item { font-family: 'Syncopate'; font-size: 0.5rem; margin-bottom: 15px; line-height: 1.4; }
-        .nav-item a {
-            color: #444; text-decoration: none;
-            transition: 0.3s; display: block;
-            border-left: 2px solid transparent; padding-left: 15px;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        .nav-item { 
+            margin-bottom: 22px; 
+            line-height: 1.2;
         }
-        .nav-item a:hover, .nav-item a.active { color: var(--alert); border-left-color: var(--alert); }
+        .nav-item a {
+            font-family: var(--mono-font);
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: #444; 
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: block;
+            border-left: 2px solid transparent; 
+            padding-left: 18px;
+            letter-spacing: 1px;
+            white-space: normal; /* Allow wrapping for clarity */
+        }
+        .nav-item a:hover {
+            color: #aaa;
+            border-left-color: #333;
+            transform: translateX(4px);
+        }
+        .nav-item a.active { 
+            color: #fff; 
+            border-left-color: var(--alert); 
+            transform: translateX(8px);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
 
         .article-body { max-width: 800px; margin: 0 auto; width: 100%; }
-        .article-body p { margin-bottom: 30px; font-size: 1.1rem; color: #aaa; }
+        .article-body p { margin-bottom: 35px; font-size: 1.15rem; color: #bbb; }
 
         .block-heading {
-            font-family: 'Syncopate';
-            font-size: 1rem; color: #fff;
-            margin: 80px 0 30px; letter-spacing: 1px;
-            padding-bottom: 10px; border-bottom: 1px solid #1a1a1a;
-            scroll-margin-top: 120px;
+            font-family: var(--mono-font);
+            font-size: 1.1rem; color: #fff;
+            margin: 100px 0 35px; letter-spacing: 1px;
+            padding-bottom: 15px; border-bottom: 1px solid #1a1a1a;
+            scroll-margin-top: 140px;
+            font-weight: 700;
         }
 
-        .block-image-wrap { margin: 60px 0; background: #080808; border: 1px solid #1a1a1a; padding: 10px; }
-        .block-image-wrap img { width: 100%; display: block; filter: grayscale(0.4); transition: 0.5s; }
+        .block-image-wrap { margin: 70px 0; background: #080808; border: 1px solid #1a1a1a; padding: 10px; }
+        .block-image-wrap img { width: 100%; display: block; filter: grayscale(0.5); transition: 0.5s; }
         .block-image-wrap:hover img { filter: grayscale(0); }
 
         .list-panel {
-            background: rgba(255, 255, 255, 0.02);
-            border-left: 2px solid #222;
-            padding: 20px; margin: 20px 0;
-            font-family: var(--sans-font); color: #888; font-size: 0.95rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 2px solid var(--alert);
+            padding: 25px; margin: 30px 0;
+            font-family: var(--sans-font); color: #999; font-size: 1rem;
         }
 
         .ai-status {
             position: sticky; top: 120px;
-            height: fit-content; padding: 20px;
+            height: fit-content; padding: 25px;
             background: var(--glass); border: 1px solid #1a1a1a;
         }
-        .ai-status h4 { font-family: 'Syncopate'; font-size: 0.55rem; color: var(--alert); margin-bottom: 10px; }
-        #ai-insight { font-size: 0.75rem; color: #666; font-family: var(--sans-font); font-style: italic; }
+        .ai-status h4 { font-family: var(--mono-font); font-size: 0.55rem; color: var(--alert); margin-bottom: 15px; }
+        #ai-insight { font-size: 0.8rem; color: #888; font-family: var(--sans-font); line-height: 1.5; }
 
-        footer { padding: 100px 5vw; background: #000; text-align: center; }
+        footer { padding: 120px 5vw; background: #000; text-align: center; border-top: 1px solid #111; }
         .next-card {
-            display: inline-block; border: 1px solid #1a1a1a;
-            padding: 40px; margin-top: 30px;
+            display: inline-block; border: 1px solid #222;
+            padding: 50px 80px; margin-top: 35px;
             text-decoration: none; transition: 0.3s;
         }
-        .next-card:hover { border-color: var(--alert); }
-        .next-card h4 { color: #fff; font-size: 0.8rem; }
+        .next-card:hover { border-color: var(--alert); background: rgba(255, 17, 17, 0.02); }
+        .next-card h4 { color: #fff; font-size: 0.9rem; letter-spacing: 2px; }
 
         @media (max-width: 1200px) {
             .article-layout { grid-template-columns: 1fr; }
@@ -166,7 +196,7 @@
     <div id="article-root"></div>
 
     <footer>
-        <div class="sync-font" style="font-size: 0.6rem; color: var(--alert); letter-spacing: 4px;">CONTINUE_CHRONICLE</div>
+        <div class="sync-font" style="font-size: 0.6rem; color: var(--alert); letter-spacing: 4px; opacity: 0.6;">CONTINUE_CHRONICLE</div>
         <div id="next-article-container"></div>
     </footer>
 
@@ -177,6 +207,7 @@
             const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
             const scrolled = (winScroll / height) * 100;
+            
             const pb = document.getElementById("progress-bar");
             if(pb) pb.style.width = scrolled + "%";
 
@@ -185,11 +216,15 @@
             
             let current = "";
             headings.forEach(h => {
-                if (winScroll >= h.offsetTop - 150) current = h.id;
+                const top = h.offsetTop - 160;
+                if (winScroll >= top) current = h.id;
             });
 
             navLinks.forEach(link => {
-                link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
             });
         };
 
@@ -223,34 +258,23 @@
             const isHeadingCandidate = (text, nextText = "") => {
                 const t = text.trim();
                 if (!t || t.length > 80) return false;
-                
-                // 1. Explicit Numbering (1., 01., Section 1)
                 if (/^(\d+\.|Section|Part|Step)/i.test(t)) return true;
-                
-                // 2. Styled Headers (Ends with ? or :)
                 if (t.endsWith('?') || t.endsWith(':')) return true;
-
-                // 3. Visual formatting patterns (>> TITLE or [TITLE])
                 if (t.startsWith('>>') || (t.startsWith('[') && t.endsWith(']'))) return true;
 
-                // 4. Case Heuristics: Short line, All Caps OR Title Case, and followed by a longer text block
                 const isCaps = t === t.toUpperCase() && /[A-Z]/.test(t);
                 const isTitleCase = t.split(' ').every(w => w[0] === w[0]?.toUpperCase());
                 const nextIsLong = nextText.trim().length > 100;
 
                 if ((isCaps || isTitleCase) && nextIsLong) return true;
-
                 return false;
             };
 
-            // Handling structured blocks vs raw strings
             const dataToProcess = post.blocks ? post.blocks : [{ type: 'text', value: post.content || "" }];
 
             dataToProcess.forEach(block => {
                 if (block.type === 'text') {
-                    // Split by double newline to get logical paragraphs
                     const chunks = block.value.split(/\n\n+/);
-                    
                     chunks.forEach((chunk, index) => {
                         const lines = chunk.split('\n').filter(l => l.trim());
                         if (lines.length === 0) return;
@@ -303,7 +327,7 @@
                     <div class="article-layout">
                         <aside class="side-nav">
                             <h4 class="sync-font">INDEX</h4>
-                            <ul class="nav-list">${result.nav || '<li class="nav-item">END_OF_LINE</li>'}</ul>
+                            <ul class="nav-list">${result.nav || '<li class="nav-item"><a>END_OF_LINE</a></li>'}</ul>
                         </aside>
                         <main class="article-body">${result.body}</main>
                         <aside class="ai-status">
