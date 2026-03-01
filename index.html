@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&family=Syncopate:wght@400;700&family=Stalinist+One&display=swap" rel="stylesheet">
 
-    <!-- External Data Files -->
+    <!-- EXTERNAL DATA SOURCE -->
     <script src="dat.js"></script>
 
     <style>
@@ -163,11 +163,11 @@
         .site-desc-section {
             padding: 100px 10vw 40px;
             text-align: center;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
         }
         .site-desc-section h3 { color: var(--alert); font-size: 0.8rem; letter-spacing: 5px; margin-bottom: 20px; }
-        .site-desc-section p { font-size: 1.5rem; line-height: 1.6; color: #888; font-weight: 300; }
+        .site-desc-section p { font-size: 1.5rem; line-height: 1.6; color: #888; font-weight: 300; margin-bottom: 50px; }
 
         .mission-cta { 
             display: flex;
@@ -178,17 +178,38 @@
         }
         .mission-cta a {
             display: inline-flex;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             text-decoration: none;
-            color: var(--alert);
+            color: #fff;
             font-family: 'Syncopate', sans-serif;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             letter-spacing: 3px;
-            border: 1px solid rgba(255, 17, 17, 0.3);
-            padding: 15px 40px;
-            transition: 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px 40px;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            min-width: 280px;
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: hidden;
         }
-        .mission-cta a:hover { color: #fff; background: var(--alert); box-shadow: 0 0 30px rgba(255, 17, 17, 0.4); transform: scale(1.05); }
+        .mission-cta a span.sub {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            letter-spacing: 1px;
+            text-transform: none;
+        }
+        .mission-cta a:hover { 
+            border-color: var(--alert);
+            background: rgba(255, 17, 17, 0.05);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+        }
+        .mission-cta a:hover span.sub { color: #fff; }
+        .mission-cta a.primary-btn { border-color: var(--alert); color: var(--alert); }
 
         /* --- TICKER --- */
         .ticker-wrap {
@@ -199,7 +220,6 @@
             border-bottom: 1px solid #111;
             padding: 25px 0;
             white-space: nowrap;
-            display: none; /* Shown only if data exists */
         }
         .ticker { display: inline-flex; animation: marquee 60s linear infinite; }
         .ticker-item {
@@ -242,7 +262,6 @@
         .view-btn { background: none; border: 1px solid #333; color: #fff; padding: 12px 30px; font-family: 'Syncopate'; font-size: 0.7rem; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-block; }
         .view-btn:hover { background: #fff; color: #000; }
 
-        /* No Data State */
         .empty-state {
             text-align: center;
             padding: 100px 0;
@@ -258,7 +277,7 @@
         #sidebar { position: fixed; top: 0; left: -320px; width: 320px; height: 100vh; background: rgba(5,5,5,0.98); backdrop-filter: blur(20px); z-index: 1000; transition: 0.5s; padding: 100px 40px; border-right: 1px solid #222; }
         #sidebar.active { left: 0; }
         #sidebar a { 
-            color: #fff; text-decoration: none; display: block; margin-bottom: 25px; font-size: 1rem; 
+            color: #fff; text-decoration: none; display: block; margin-bottom: 25px; font-size: 0.85rem; 
             letter-spacing: 2px; position: relative; font-family: 'Syncopate', sans-serif; width: fit-content;
         }
         #sidebar a::after {
@@ -266,8 +285,9 @@
             background: var(--alert); transition: width 0.4s cubic-bezier(0.8, 0, 0.2, 1); box-shadow: 0 0 10px var(--alert);
         }
         #sidebar a:hover::after { width: 100%; }
+        #sidebar a.active-link { color: var(--alert); }
         
-        .sidebar-divider { height: 1px; background: #222; margin: 20px 0; width: 50%; }
+        .sidebar-divider { height: 1px; background: #222; margin: 25px 0; width: 50%; }
         .nav-label { font-size: 0.6rem; color: #444; letter-spacing: 3px; margin-bottom: 15px; display: block; }
 
         footer { padding: 100px 5vw 50px; text-align: center; font-size: 0.6rem; color: #333; letter-spacing: 5px; }
@@ -276,6 +296,8 @@
             .archive-item { flex-direction: column; }
             .archive-img-box { width: 100%; height: 35vh; }
             .archive-info h2 { font-size: 2.5rem; }
+            .mission-cta { padding: 0 5vw 100px; }
+            .mission-cta a { width: 100%; }
         }
     </style>
 </head>
@@ -300,8 +322,10 @@
 
     <nav id="sidebar">
         <span class="nav-label">ARCHIVE_EXPLORER</span>
-        <a href="index.html">HOME</a>
+        <a href="index.html" class="active-link">HOME</a>
         <a href="Showroom.html">SHOWROOM</a>
+        <a href="apex_gaming.html">EXPERIENCE MODELS</a>
+        <a href="apex_garage.html">CREATE MODELS</a>
         <a href="blog.html">THE BLOG</a>
         
         <div class="sidebar-divider"></div>
@@ -316,18 +340,29 @@
     <section class="site-desc-section">
         <h3>// THE_MISSION</h3>
         <p>APEX is a digital sanctuary for high-performance engineering. We document the history, mechanics, and cultural impact of the world's most legendary automotive units.</p>
+        
+        <div class="mission-cta">
+            <a href="Showroom.html" class="primary-btn">
+                ENTER_SHOWROOM
+                <span class="sub">Explore the digital collection</span>
+            </a>
+            <a href="apex_gaming.html">
+                EXPERIENCE_MODELS
+                <span class="sub">High-fidelity simulator access</span>
+            </a>
+            <a href="apex_garage.html">
+                CREATE_MODELS
+                <span class="sub">Workshop & custom configuration</span>
+            </a>
+        </div>
     </section>
 
-    <div class="mission-cta">
-        <a href="Showroom.html">ENTER_SHOWROOM</a>
-    </div>
-
-    <section class="ticker-wrap" id="tickerWrapper">
+    <section class="ticker-wrap" id="tickerWrapper" style="display:none;">
         <div class="ticker" id="carTicker"></div>
     </section>
 
     <section id="archive-list">
-        <!-- Dynamically rendered -->
+        <!-- Rendered via JS -->
     </section>
 
     <footer>© 2024 APEX DIGITAL ARCHIVE // POWERED BY HONKPISTON</footer>
@@ -376,27 +411,28 @@
             const tickerWrapper = document.getElementById('tickerWrapper');
             const archiveList = document.getElementById('archive-list');
             
-            // carDatabase should be provided by dat.js. Initializing as empty.
+            // Priority: Load from dat.js (window.carDatabase)
+            // If window.carDatabase is not found, we display the empty state.
             const data = window.carDatabase || [];
 
             if(data.length > 0) {
                 tickerWrapper.style.display = 'block';
-                // Ticker Content
+                // Create ticker content
                 const tickerContent = data.map(car => `
                     <div class="ticker-item">
                         <span>[ ${car.year || '----'} ]</span> ${car.name}
                     </div>
                 `).join('');
-                ticker.innerHTML = tickerContent + tickerContent + tickerContent;
+                ticker.innerHTML = tickerContent + tickerContent + tickerContent; // Triple for infinite scroll feel
 
-                // Billboard Content
+                // Create archive list
                 archiveList.innerHTML = '';
                 data.forEach((car) => {
                     const item = document.createElement('div');
                     item.className = 'archive-item';
                     item.innerHTML = `
                         <div class="archive-img-box" onclick="localStorage.setItem('selected_car_id', '${car.id}'); window.location.href='Showroom.html'">
-                            <img src="${car.images?.desktop || ''}" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x450?text=UNIT_UNAVAILABLE'">
+                            <img src="${car.images?.desktop || ''}" alt="${car.name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/800x450?text=UNIT_UNAVAILABLE'">
                         </div>
                         <div class="archive-info">
                             <span class="year-label">YEAR: ${car.year || 'TBA'}</span>
@@ -410,13 +446,16 @@
                     archiveList.appendChild(item);
                 });
 
-                // Intersection Observer
+                // Set up Intersection Observer for reveal effect
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
                 }, { threshold: 0.1 });
                 document.querySelectorAll('.archive-item').forEach(el => observer.observe(el));
+                
             } else {
-                archiveList.innerHTML = '<div class="empty-state">ARCHIVE_EMPTY // NO_UNITS_LOADED</div>';
+                // If dat.js is empty or missing
+                archiveList.innerHTML = '<div class="empty-state">ARCHIVE_OFFLINE // CONNECTING_TO_DAT_JS...</div>';
+                console.warn("APEX: No data found in window.carDatabase. Ensure dat.js is loaded correctly.");
             }
         });
     </script>
