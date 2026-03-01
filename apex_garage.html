@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APEX // GARAGE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #050505; --text: #eee; --alert: #ff1111; --border: #333; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Rajdhani', sans-serif; }
+        header { border-bottom: 1px solid var(--border); padding: 20px 5vw; display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-family: 'Syncopate', sans-serif; color: var(--alert); margin: 0; font-size: 1.5rem; }
+        
+        .container { max-width: 800px; margin: 50px auto; padding: 0 20px; }
+        .panel { background: #0a0a0a; border: 1px solid var(--border); padding: 30px; margin-bottom: 20px; }
+        .panel h2 { font-family: 'Syncopate', sans-serif; font-size: 1rem; margin-top: 0; color: #aaa; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 0.8rem; letter-spacing: 2px; color: #888; text-transform: uppercase; }
+        input[type="text"], input[type="number"] { background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; font-family: 'Rajdhani'; font-size: 1rem; }
+        input:focus { outline: 1px solid var(--alert); }
+        
+        .file-upload { border: 2px dashed var(--border); padding: 30px; text-align: center; cursor: pointer; background: #000; transition: 0.3s; }
+        .file-upload:hover { border-color: var(--alert); }
+        
+        .actions { display: flex; gap: 15px; margin-top: 20px; }
+        button, .btn { background: transparent; border: 1px solid var(--alert); color: var(--alert); padding: 15px 30px; font-family: 'Syncopate'; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; transition: 0.3s; flex: 1; text-align: center; display: block; }
+        button:hover, .btn:hover { background: var(--alert); color: #000; box-shadow: 0 0 20px rgba(255,17,17,0.4); }
+        .btn-alt { border-color: #555; color: #fff; }
+        .btn-alt:hover { background: #fff; color: #000; box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+
+        #msg-box { padding: 10px; margin-bottom: 20px; display: none; background: #111; border-left: 3px solid var(--alert); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>APEX // GARAGE</h1>
+        <div style="font-size: 0.8rem; letter-spacing: 2px;">UNIT CONFIGURATION TOOL</div>
+    </header>
+
+    <div class="container">
+        <div id="msg-box"></div>
+
+        <div class="actions" style="margin-bottom: 30px;">
+            <input type="file" id="importFile" accept=".apex,.json" style="display:none;" onchange="importCarData(event)">
+            <button class="btn-alt" onclick="document.getElementById('importFile').click()">Load Existing (.APEX) File</button>
+        </div>
+
+        <div class="panel">
+            <h2>1. Unit Specifications</h2>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Vehicle Name</label>
+                    <input type="text" id="carName" placeholder="e.g. TATA NANO V2">
+                </div>
+                <div class="input-group">
+                    <label>Horsepower (HP)</label>
+                    <input type="number" id="carHP" placeholder="e.g. 37">
+                </div>
+                <div class="input-group">
+                    <label>Top Speed (MPH)</label>
+                    <input type="number" id="carSpeed" placeholder="e.g. 65">
+                </div>
+                <div class="input-group">
+                    <label>0-60 Time (Seconds)</label>
+                    <input type="number" id="carAccel" placeholder="e.g. 17.0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Braking Efficiency (1-10)</label>
+                    <input type="number" id="carBrake" placeholder="e.g. 5" min="1" max="10">
+                </div>
+                <div class="input-group">
+                    <label>Mass (LBS)</label>
+                    <input type="number" id="carMass" placeholder="e.g. 1322">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>2. 3D Model Injection</h2>
+            <input type="file" id="modelUpload" accept=".glb,.gltf" style="display:none;" onchange="handleModelUpload(event)">
+            <div class="file-upload" onclick="document.getElementById('modelUpload').click()">
+                <p id="uploadText" style="letter-spacing: 2px;">CLICK TO UPLOAD .GLB / .GLTF MODEL</p>
+                <p style="font-size: 0.7rem; color: #555; margin-top: 5px;">(Model will be compressed and embedded into the save file)</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="exportCarData()">ENCODE & EXPORT UNIT</button>
+        </div>
+    </div>
+
+    <script>
+        let embeddedModelBase64 = null;
+
+        function showMsg(txt) {
+            const box = document.getElementById('msg-box');
+            box.innerText = txt;
+            box.style.display = 'block';
+            setTimeout(() => box.style.display = 'none', 4000);
+        }
+
+        function handleModelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('uploadText').innerText = "ENCODING MODEL... PLEASE WAIT";
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // e.target.result contains the base64 Data URL
+                embeddedModelBase64 = e.target.result;
+                document.getElementById('uploadText').innerText = `MODEL EMBEDDED: ${file.name} (READY)`;
+                showMsg("3D Model successfully loaded into memory.");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function exportCarData() {
+            const name = document.getElementById('carName').value || 'Unknown_Unit';
+            
+            const carData = {
+                metadata: {
+                    name: name,
+                    version: "1.0",
+                    created: new Date().toISOString()
+                },
+                physics: {
+                    hp: parseFloat(document.getElementById('carHP').value) || 100,
+                    topSpeed: parseFloat(document.getElementById('carSpeed').value) || 120,
+                    accel0to60: parseFloat(document.getElementById('carAccel').value) || 8.0,
+                    braking: parseFloat(document.getElementById('carBrake').value) || 5,
+                    mass: parseFloat(document.getElementById('carMass').value) || 3000
+                },
+                modelData: embeddedModelBase64 // The massive base64 string
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(carData));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", name.replace(/\s+/g, '_') + ".apex");
+            dlAnchorElem.click();
+            
+            showMsg("Unit Encoded! Download starting.");
+        }
+
+        function importCarData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const carData = JSON.parse(e.target.result);
+                    
+                    document.getElementById('carName').value = carData.metadata.name;
+                    document.getElementById('carHP').value = carData.physics.hp;
+                    document.getElementById('carSpeed').value = carData.physics.topSpeed;
+                    document.getElementById('carAccel').value = carData.physics.accel0to60;
+                    document.getElementById('carBrake').value = carData.physics.braking;
+                    document.getElementById('carMass').value = carData.physics.mass;
+                    
+                    if(carData.modelData) {
+                        embeddedModelBase64 = carData.modelData;
+                        document.getElementById('uploadText').innerText = "MODEL EMBEDDED FROM SAVE FILE";
+                    }
+
+                    showMsg("Unit data loaded successfully!");
+                } catch(err) {
+                    showMsg("Error reading .apex file. File might be corrupted.");
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
